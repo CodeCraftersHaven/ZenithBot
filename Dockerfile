@@ -2,16 +2,17 @@ FROM node:latest
 
 RUN npm install -g @sern/cli typescript@latest
 
-WORKDIR /app
+WORKDIR /zenith
 
-COPY package.json ./
+COPY *.json ./
 
 RUN npm install
 
-COPY . .
+COPY src /zenith/src
+COPY prisma /zenith/prisma
 
 RUN sern build
 
 RUN npx prisma generate
 
-CMD node dist/index.js
+CMD ["node", "dist/index.js"]

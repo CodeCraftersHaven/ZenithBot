@@ -16,7 +16,8 @@ ZenithBot is a versatile bot coded in TypeScript, designed to enhance server man
 ## Installation
 
 To get started with ZenithBot, follow these steps:
-
+Please have Node.js, a bot from Discord Developers Page, and [optionally] Docker/Docker Compose set up on your host machine.
+# Using yarn/npm/pnpm
 1. Clone the repository:
     ```bash
     git clone https://github.com/yourusername/ZenithBot.git
@@ -27,21 +28,38 @@ To get started with ZenithBot, follow these steps:
     cd ZenithBot
     ```
 
-3. Install the required dependencies:
+3. Setup env vars:<br>
+    - Rename `.env.example` to `.env`<br>
+    - Fill out all variables<br>
+    - DATABASE_URL currently only supports mongodb
+
+4. Install the required dependencies:
     ```bash
     yarn install
     ```
 
-4. Build the bot:
+5. Build the bot:
     ```bash
     yarn build
     ```
 
-4. Run the bot:
+6. Run the bot:
     ```bash
     yarn start
     ```
 
+# Using Docker/Docker Compose
+
+I've included both files to make this process simple. Highly recommend using docker compose for production.
+
+## change {appname} to what you want the image to be named
+
+### To use docker only, run these commands
+- docker build --pull --rm -f 'Dockerfile' -t '{appname}:latest' '.' 
+- docker run --rm -d --env-file {appname}:latest
+### To use docker compose, this is the only command you need
+- docker compose -f 'docker-compose.yml' up -d --build
+    - optionally you can replace `-d` with `-it` to watch the logs
 ## Usage
 
 Once the bot is running, you can interact with it using the following commands:

@@ -1,0 +1,8 @@
+services:
+  customsbot:
+    build: .
+    container_name: customsbot
+    restart: unless-stopped
+    network_mode: bridge
+    env_file:
+      - .env
