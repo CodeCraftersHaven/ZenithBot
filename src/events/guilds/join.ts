@@ -65,7 +65,7 @@ export default eventModule({
                 },
                 {
                     name: "Source Code",
-                    value: "[GitHub](https://github.com/CodeCraftersHaven/) **coming soon**"
+                    value: "[GitHub](https://github.com/CodeCraftersHaven/ZenithBot)"
                 },
                 {
                     name: "Starting Command",
