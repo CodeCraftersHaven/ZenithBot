@@ -1,7 +1,7 @@
 services:
-  customsbot:
+  zenithbot:
     build: .
-    container_name: customsbot
+    container_name: zenithbot
     restart: unless-stopped
     network_mode: bridge
     env_file:
