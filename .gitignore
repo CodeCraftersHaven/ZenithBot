@@ -5,4 +5,4 @@ dist
 .sern
 .npmignore
 response.log
-runtime.log
+runtime.logs
