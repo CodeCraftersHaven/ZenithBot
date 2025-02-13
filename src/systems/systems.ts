@@ -12,9 +12,7 @@ export default class Systems {
 
     }
     async createPanel(ctx: CTX, channel: TextChannel, system: string, opts: Partial<PanelOpts>) {
-        if (channel.messages.cache.size > 0) {
-            return ctx.reply({ content: "I can't use a channel that has messages in it. Please empty the channel or choose another one!", withResponse: true })
-        }
+     
 
         const currentPermissions: Permission[] = channel.permissionOverwrites.cache.map(overwrite => ({
             id: overwrite.id,
@@ -129,10 +127,14 @@ export default class Systems {
             })
         }
         setTimeout(async () => {
-            await channel.permissionOverwrites.set([
-                { id: channel.guild.roles.everyone.id, deny: PermissionsBitField.resolve(Object.keys(PermissionsBitField.Flags).filter(perm => perm !== "ViewChannel") as PermissionResolvable[]), allow: ["ViewChannel"] },
-                { id: this.c.user?.id!, allow: ["SendMessages", "ManageMessages", "ViewChannel"] }
-            ]);
+            try {
+                await channel.permissionOverwrites.set([
+                    { id: channel.guild.roles.everyone.id, deny: PermissionsBitField.resolve(Object.keys(PermissionsBitField.Flags).filter(perm => perm !== "ViewChannel") as PermissionResolvable[]), allow: ["ViewChannel"] },
+                    { id: this.c.user?.id!, allow: ["SendMessages", "ManageMessages", "ViewChannel"] }
+                ]);
+            } catch (error) {
+                await ctx.reply({ content: "I'm missing permissions to change the channel's permissions.", withResponse: true})
+            }
         }, 10000);
 
 
