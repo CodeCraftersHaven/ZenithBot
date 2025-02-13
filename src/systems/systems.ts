@@ -15,6 +15,56 @@ export default class Systems {
         if (channel.messages.cache.size > 0) {
             return ctx.reply({ content: "I can't use a channel that has messages in it. Please empty the channel or choose another one!", withResponse: true })
         }
+        const infoEmbed = new EmbedBuilder({
+            title: "Channel Locked",
+            fields: [
+                {
+                    name: "Reason",
+                    value: `${capFirstLetter(system)} system has been set up in this channel.`
+                },
+                {
+                    name: "Info",
+                    value: "This channel has been locked for the setup of the selected system. Only administrators and the bot can send messages here."
+                }
+            ]
+        });
+
+        const infoButtons = ["🛑|Delete", "😍|Like", "🤮|Dislike"].map(button => {
+            const [emoji, name] = button.split("|");
+            return new ButtonBuilder({
+                style: name == 'Delete' ? ButtonStyle.Danger : ButtonStyle.Primary,
+                emoji,
+                label: name,
+                custom_id: `panel/${name.toLowerCase()}`
+            });
+        });
+        const infoRow = new ActionRowBuilder<ButtonBuilder>({ components: infoButtons });
+
+        const embed: EmbedBuilder = new EmbedBuilder()
+            .setTitle("Tickets")
+            .setDescription("Click 📩 to open a ticket")
+            .setColor("Random")
+        const openTicket = new ButtonBuilder()
+            .setCustomId("tickets/open")
+            .setLabel("Open Ticket")
+            .setStyle(ButtonStyle.Primary)
+            .setEmoji("📩")
+        const checkTicket = new ButtonBuilder()
+            .setCustomId("tickets/check")
+            .setLabel("Check Ticket")
+            .setStyle(ButtonStyle.Primary)
+            .setEmoji("✅")
+        const row = new ActionRowBuilder<ButtonBuilder>().addComponents(openTicket, checkTicket);
+
+        if (system === "tickets") {
+            await sendMessages(channel, [infoEmbed, infoRow], [embed, row]).catch(async (e) => {
+                await ctx.reply({ content: `I can't access that channel. Please give me permissions. ${e.message}`, withResponse: true })
+            })
+        } else {
+            await sendMessages(channel, [infoEmbed, infoRow]).catch(async (e) => {
+                await ctx.reply({ content: `I can't access that channel. Please give me permissions. ${e.message}`, withResponse: true })
+            })
+        }
         const currentPermissions: Permission[] = channel.permissionOverwrites.cache.map(overwrite => ({
             id: overwrite.id,
             allow: overwrite.allow.toArray().map(perm => new PermissionsBitField(perm)),
@@ -82,56 +132,7 @@ export default class Systems {
             { id: this.c.user?.id!, allow: ["SendMessages", "ManageMessages", "ViewChannel"] }
         ]);
 
-        const infoEmbed = new EmbedBuilder({
-            title: "Channel Locked",
-            fields: [
-                {
-                    name: "Reason",
-                    value: `${capFirstLetter(system)} system has been set up in this channel.`
-                },
-                {
-                    name: "Info",
-                    value: "This channel has been locked for the setup of the selected system. Only administrators and the bot can send messages here."
-                }
-            ]
-        });
-
-        const infoButtons = ["🛑|Delete", "😍|Like", "🤮|Dislike"].map(button => {
-            const [emoji, name] = button.split("|");
-            return new ButtonBuilder({
-                style: name == 'Delete' ? ButtonStyle.Danger : ButtonStyle.Primary,
-                emoji,
-                label: name,
-                custom_id: `panel/${name.toLowerCase()}`
-            });
-        });
-        const infoRow = new ActionRowBuilder<ButtonBuilder>({ components: infoButtons });
-
-        const embed: EmbedBuilder = new EmbedBuilder()
-            .setTitle("Tickets")
-            .setDescription("Click 📩 to open a ticket")
-            .setColor("Random")
-        const openTicket = new ButtonBuilder()
-            .setCustomId("tickets/open")
-            .setLabel("Open Ticket")
-            .setStyle(ButtonStyle.Primary)
-            .setEmoji("📩")
-        const checkTicket = new ButtonBuilder()
-            .setCustomId("tickets/check")
-            .setLabel("Check Ticket")
-            .setStyle(ButtonStyle.Primary)
-            .setEmoji("✅")
-        const row = new ActionRowBuilder<ButtonBuilder>().addComponents(openTicket, checkTicket);
-
-        if (system === "tickets") {
-            await sendMessages(channel, [infoEmbed, infoRow], [embed, row]).catch(async (e) => {
-                await ctx.reply({ content: `I can't access that channel. Please give me permissions. ${e.message}`, withResponse: true })
-            })
-        } else {
-            await sendMessages(channel, [infoEmbed, infoRow]).catch(async (e) => {
-                await ctx.reply({ content: `I can't access that channel. Please give me permissions. ${e.message}`, withResponse: true })
-            })
-        }
+   
 
 
         async function sendMessages(
