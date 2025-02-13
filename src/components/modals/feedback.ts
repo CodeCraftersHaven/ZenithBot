@@ -12,7 +12,7 @@ export default commandModule({
             comment: async () => {
                 const { client } = ctx;
                 const report = ctx.fields.getTextInputValue("feedback/report");
-                const repChannel = await client.channels.fetch('1338771237739954206') as TextChannel;
+                const repChannel = await client.channels.fetch(process.env.REPORTS_ID!) as TextChannel;
                 await feedback.update({
                     where: { id: ctx.guildId! },
                     data: { users: { updateMany: { where: { userId: ctx.user.id }, data: { comment: report } } } }
