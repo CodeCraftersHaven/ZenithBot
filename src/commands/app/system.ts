@@ -68,7 +68,7 @@ export default commandModule({
                 const system = ctx.options.getString("system", true);
                 const channel = ctx.options.getChannel("channel", true) as TextChannel;
 
-                if ((system === "selfroles") && ctx.guildId !== '716249660838379541') {
+                if ((system === "selfroles") && ctx.guildId !== process.env.HOME_SERVER_ID!) {
                     return await ctx.reply("This system is still in development. Please be patient.")
                 }
                 Systems.createPanel(ctx ,channel, system,{})
