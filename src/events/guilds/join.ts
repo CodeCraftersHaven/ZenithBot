@@ -41,7 +41,7 @@ export default eventModule({
             .filter((channel) =>
                 channel.isTextBased() &&
                 channel.permissionsFor(guild.members.me!)?.has(["ViewChannel", "SendMessages"])
-            ).last() as TextChannel | undefined;
+            ).first() as TextChannel | undefined;
         if (!firstChannel) return;
         const embed = {
             title: "Thanks for inviting me!",
