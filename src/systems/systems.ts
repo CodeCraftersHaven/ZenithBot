@@ -100,38 +100,42 @@ export default class Systems {
             } else {
                 await this.sendMessages(channel, [infoEmbed, infoRow])
             }
-            await this.db.systems.update({
-                where: { id: ctx.guild?.id! },
-                data: {
-                    systems: {
-                        updateMany: {
-                            where: { name: system },
-                            data: {
-                                enabled: true,
-                                name: system,
-                                channels: {
-                                    set: [{
-                                        id: channel.id,
-                                        name: channel.name,
-                                        perms: currentPermissions.map(permission => ({
-                                            id: permission.id,
-                                            allow: permission.allow.reduce((acc, perm) => acc | BigInt(perm.bitfield), BigInt(0)).toString(),
-                                            deny: permission.deny.reduce((acc, perm) => acc | BigInt(perm.bitfield), BigInt(0)).toString()
-                                        }))
-                                    }]
+            await channel.permissionOverwrites.set([
+                { id: channel.guild.roles.everyone.id, deny: PermissionsBitField.resolve(Object.keys(PermissionsBitField.Flags).filter(perm => perm !== "ViewChannel") as PermissionResolvable[]), allow: ["ViewChannel"] },
+                { id: this.c.user?.id!, allow: PermissionsBitField.resolve(Object.keys(PermissionsBitField.Flags) as PermissionResolvable[]) }
+            ]).then(async () => {
+                await this.db.systems.update({
+                    where: { id: ctx.guild?.id! },
+                    data: {
+                        systems: {
+                            updateMany: {
+                                where: { name: system },
+                                data: {
+                                    enabled: true,
+                                    name: system,
+                                    channels: {
+                                        set: [{
+                                            id: channel.id,
+                                            name: channel.name,
+                                            perms: currentPermissions.map(permission => ({
+                                                id: permission.id,
+                                                allow: permission.allow.reduce((acc, perm) => acc | BigInt(perm.bitfield), BigInt(0)).toString(),
+                                                deny: permission.deny.reduce((acc, perm) => acc | BigInt(perm.bitfield), BigInt(0)).toString()
+                                            }))
+                                        }]
+                                    }
                                 }
                             }
                         }
                     }
-                }
-            });
-            await channel.permissionOverwrites.set([
-                { id: channel.guild.roles.everyone.id, deny: PermissionsBitField.resolve(Object.keys(PermissionsBitField.Flags).filter(perm => perm !== "ViewChannel") as PermissionResolvable[]), allow: ["ViewChannel"] },
-                { id: this.c.user?.id!, allow:  PermissionsBitField.resolve(Object.keys(PermissionsBitField.Flags) as PermissionResolvable[]) }
-            ]);
-            await ctx.reply({ content: `Enabled ${capFirstLetter(system)} system in <#${channel.id}>`, withResponse: true })
+                });
+                await ctx.reply({ content: `Enabled ${capFirstLetter(system)} system in <#${channel.id}>`, withResponse: true })
+            })
+
+
+
         } catch (error: any) {
-            return await ctx.reply({ content: "I'm missing permissions to change the channel's permissions."+error.message, withResponse: true })
+            return await ctx.reply({ content: "I'm missing permissions to change the channel's permissions." + error.message, withResponse: true })
         }
 
 
