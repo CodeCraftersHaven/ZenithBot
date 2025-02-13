@@ -133,7 +133,7 @@ export default class Systems {
                     { id: this.c.user?.id!, allow: ["SendMessages", "ManageMessages", "ViewChannel"] }
                 ]);
             } catch (error) {
-                await ctx.reply({ content: "I'm missing permissions to change the channel's permissions.", withResponse: true})
+                return await ctx.reply({ content: "I'm missing permissions to change the channel's permissions.", withResponse: true})
             }
         }, 10000);
 
