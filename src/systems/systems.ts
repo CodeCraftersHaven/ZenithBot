@@ -12,7 +12,7 @@ export default class Systems {
 
     }
     async createPanel(ctx: CTX, channel: TextChannel, system: string, opts: Partial<PanelOpts>) {
-     
+
 
         const currentPermissions: Permission[] = channel.permissionOverwrites.cache.map(overwrite => ({
             id: overwrite.id,
@@ -50,31 +50,7 @@ export default class Systems {
         if (systemExistsInChannel) {
             return ctx.reply({ content: "This system is already enabled in this channel.", withResponse: true });
         }
-        await this.db.systems.update({
-            where: { id: ctx.guild?.id! },
-            data: {
-                systems: {
-                    updateMany: {
-                        where: { name: system },
-                        data: {
-                            enabled: true,
-                            name: system,
-                            channels: {
-                                set: [{
-                                    id: channel.id,
-                                    name: channel.name,
-                                    perms: currentPermissions.map(permission => ({
-                                        id: permission.id,
-                                        allow: permission.allow.reduce((acc, perm) => acc | BigInt(perm.bitfield), BigInt(0)).toString(),
-                                        deny: permission.deny.reduce((acc, perm) => acc | BigInt(perm.bitfield), BigInt(0)).toString()
-                                    }))
-                                }]
-                            }
-                        }
-                    }
-                }
-            }
-        });
+
 
         const infoEmbed = new EmbedBuilder({
             title: "Channel Locked",
@@ -117,29 +93,51 @@ export default class Systems {
             .setEmoji("✅")
         const row = new ActionRowBuilder<ButtonBuilder>().addComponents(openTicket, checkTicket);
 
-        if (system === "tickets") {
-            await this.sendMessages(channel, [infoEmbed, infoRow], [embed, row]).catch(async (e) => {
-                await ctx.reply({ content: `I can't access that channel. Please give me permissions. ${e.message}`, withResponse: true })
-            })
-        } else {
-            await this.sendMessages(channel, [infoEmbed, infoRow]).catch(async (e) => {
-                await ctx.reply({ content: `I can't access that channel. Please give me permissions. ${e.message}`, withResponse: true })
-            })
-        }
-        setTimeout(async () => {
-            try {
-                await channel.permissionOverwrites.set([
-                    { id: channel.guild.roles.everyone.id, deny: PermissionsBitField.resolve(Object.keys(PermissionsBitField.Flags).filter(perm => perm !== "ViewChannel") as PermissionResolvable[]), allow: ["ViewChannel"] },
-                    { id: this.c.user?.id!, allow: ["SendMessages", "ManageMessages", "ViewChannel"] }
-                ]);
-            } catch (error) {
-                return await ctx.reply({ content: "I'm missing permissions to change the channel's permissions.", withResponse: true})
+        try {
+
+            if (system === "tickets") {
+                await this.sendMessages(channel, [infoEmbed, infoRow], [embed, row])
+            } else {
+                await this.sendMessages(channel, [infoEmbed, infoRow])
             }
-        }, 10000);
+            await this.db.systems.update({
+                where: { id: ctx.guild?.id! },
+                data: {
+                    systems: {
+                        updateMany: {
+                            where: { name: system },
+                            data: {
+                                enabled: true,
+                                name: system,
+                                channels: {
+                                    set: [{
+                                        id: channel.id,
+                                        name: channel.name,
+                                        perms: currentPermissions.map(permission => ({
+                                            id: permission.id,
+                                            allow: permission.allow.reduce((acc, perm) => acc | BigInt(perm.bitfield), BigInt(0)).toString(),
+                                            deny: permission.deny.reduce((acc, perm) => acc | BigInt(perm.bitfield), BigInt(0)).toString()
+                                        }))
+                                    }]
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            await channel.permissionOverwrites.set([
+                { id: channel.guild.roles.everyone.id, deny: PermissionsBitField.resolve(Object.keys(PermissionsBitField.Flags).filter(perm => perm !== "ViewChannel") as PermissionResolvable[]), allow: ["ViewChannel"] },
+                { id: this.c.user?.id!, allow:  PermissionsBitField.resolve(Object.keys(PermissionsBitField.Flags) as PermissionResolvable[]) }
+            ]);
+            await ctx.reply({ content: `Enabled ${capFirstLetter(system)} system in <#${channel.id}>`, withResponse: true })
+        } catch (error: any) {
+            return await ctx.reply({ content: "I'm missing permissions to change the channel's permissions."+error.message, withResponse: true })
+        }
 
 
-        return await ctx.reply({ content: `Enabled ${capFirstLetter(system)} system in <#${channel.id}>`, withResponse: true })
     }
+
+
 
     async clearPanel(ctx: CTX, system: string) {
         const infoEmbed = new EmbedBuilder({
