@@ -12,4 +12,8 @@ COPY . .
 
 RUN sern build
 
+RUN npx prisma generate
+
+RUN npx prisma db push
+
 CMD node dist/index.js
