@@ -1,0 +1,126 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+//-------------------------------
+//------GIVEAWAY SYSTEM----------
+//-------------------------------
+
+model Giveaway {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  guildId    String   @unique
+  channelId  String
+  messageId  String   @unique
+  host       String
+  prize      String
+  winnerSize Int
+  winners    String[]
+  endsAt     DateTime
+  interval   Int      @default(0)
+  entries    Entry[]
+}
+
+type Entry {
+  userId    String
+  createdAt DateTime @default(now())
+}
+
+//-------------------------------
+//------TICKETS SYSTEM-----------
+//-------------------------------
+
+model UserTicket {
+  id      String  @id @map("_id")
+  guilds Guild[]
+}
+
+type Guild {
+  id      String
+  tickets Ticket[]
+}
+
+type Ticket {
+  channelId String
+  open      Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+//-------------------------------
+//------SELFROLES SYSTEM---------
+//-------------------------------
+
+model SelfRoles {
+  id       String    @id @map("_id") @db.ObjectId
+  guildId  String
+  messages Message[]
+}
+
+type Message {
+  id    String
+  title String
+  roles Roles[]
+}
+
+type Roles {
+  emoji  String
+  name   String
+  roleId String
+}
+
+//-------------------------------
+//------SYSTEMS SYSTEM-----------
+//-------------------------------
+
+model Systems {
+  id      String   @id @map("_id")
+  systems System[]
+}
+
+type System {
+  name     String
+  enabled  Boolean
+  channels Channel[]
+}
+
+type Channel {
+  name  String
+  id    String
+  perms Permission[]
+}
+
+type Permission {
+  id    String
+  allow String
+  deny  String
+}
+
+//-------------------------------
+//------FEEDBACK SYSTEM----------
+//-------------------------------
+
+model Feedback {
+  id       String @id @map("_id")
+  likes    Int
+  dislikes Int
+  users    User[]
+}
+
+type User {
+  userId   String
+  userName String
+  feeling  String?
+  comment  String?
+}
+
+//-------------------------------

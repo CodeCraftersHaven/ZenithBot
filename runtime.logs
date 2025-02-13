@@ -1,0 +1,19 @@
+[02-08 06:37:21 PM] [32mINFO[39m: [32mWaiting on discord client to be ready...[39m
+[02-08 06:37:21 PM] [32mINFO[39m: [32mEvents registered[39m
+[02-08 06:37:21 PM] [32mINFO[39m: [32mClient Logged In. [39m
+[02-08 06:37:21 PM] [32mINFO[39m: [32mClient signaled ready, registering modules[39m
+[02-08 06:37:21 PM] [32mINFO[39m: [32mpublishing modules[39m
+[02-08 06:37:21 PM] [32mINFO[39m: [32msern: registered in 0.60 s[39m
+[02-08 06:37:21 PM] [32mINFO[39m: [32mConnected to Prisma ORM[39m
+[02-08 06:37:22 PM] [32mINFO[39m: [32mPublisher: All global commands published.[39m
+[31mFailed running '.'[39m
+c[32mRestarting '.'[39m
+[02-08 06:40:05 PM] [32mINFO[39m: [32mWaiting on discord client to be ready...[39m
+[02-08 06:40:05 PM] [32mINFO[39m: [32mEvents registered[39m
+[02-08 06:40:05 PM] [32mINFO[39m: [32mClient Logged In. [39m
+[02-08 06:40:05 PM] [32mINFO[39m: [32mClient signaled ready, registering modules[39m
+[02-08 06:40:05 PM] [32mINFO[39m: [32mConnected to Prisma ORM[39m
+[02-08 06:40:05 PM] [32mINFO[39m: [32mpublishing modules[39m
+[02-08 06:40:05 PM] [32mINFO[39m: [32msern: registered in 0.63 s[39m
+[02-08 06:40:05 PM] [32mINFO[39m: [32mPublisher: All global commands published.[39m
+[02-08 06:40:06 PM] [31mERROR[39m: [31mFailed to fetch message with ID 1337893112348934185: DiscordAPIError[10008]: Unknown Message[39m

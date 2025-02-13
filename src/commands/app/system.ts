@@ -1,0 +1,96 @@
+import { commandModule, CommandType } from "@sern/handler";
+import { ApplicationCommandOptionType, ChannelType, PermissionsBitField, TextChannel } from "discord.js";
+import { IntegrationContextType, publishConfig } from "@sern/publisher";
+import { capFirstLetter } from "#utils";
+
+export default commandModule({
+    type: CommandType.Slash,
+    name: "system",
+    description: "enable or disable systems",
+    plugins: [publishConfig({
+        defaultMemberPermissions: PermissionsBitField.Flags.Administrator,
+        integrationTypes: ["Guild"],
+        contexts: [IntegrationContextType.GUILD]
+    })],
+    options: [
+        {
+            name: "enable",
+            description: "enable a system",
+            type: ApplicationCommandOptionType.Subcommand,
+            options: [
+                {
+                    name: "system",
+                    description: "the system to enable",
+                    type: ApplicationCommandOptionType.String,
+                    choices: [
+                        { name: "tickets", value: "tickets" },
+                        { name: "giveaways", value: "giveaways" },
+                        { name: "selfroles", value: "selfroles" },
+                    ],
+                    required: true,
+                },
+                {
+                    name: "channel",
+                    description: "the channel to setup the system in",
+                    type: ApplicationCommandOptionType.Channel,
+                    channel_types: [ChannelType.GuildText],
+                    required: true,
+                }
+            ],
+        },
+        {
+            name: "disable",
+            description: "disable a system",
+            type: ApplicationCommandOptionType.Subcommand,
+            options: [
+                {
+                    name: "system",
+                    description: "the system to disable",
+                    type: ApplicationCommandOptionType.String,
+                    choices: [
+                        { name: "tickets", value: "tickets" },
+                        { name: "giveaways", value: "giveaways" },
+                        { name: "selfroles", value: "selfroles" },
+                    ],
+                    required: true,
+                },
+            ],
+        }
+    ],
+    async execute(ctx, { deps }) {
+        const { guildId } = ctx;
+        const [db, sys] = [deps["@prisma/client"], deps["systems"].Systems]
+        const enabled = await db.systems.findFirst({ where: { id: guildId! }, select: { systems: true } });
+        const subcommand = ctx.options.getSubcommand();
+        const Systems = new sys()
+        const subcommands = {
+            enable: async () => {
+                const system = ctx.options.getString("system", true);
+                const channel = ctx.options.getChannel("channel", true) as TextChannel;
+
+                if ((system === "selfroles") && ctx.guildId !== '716249660838379541') {
+                    return await ctx.reply("This system is still in development. Please be patient.")
+                }
+                Systems.createPanel(ctx ,channel, system,{})
+             
+            },
+            disable: async () => {
+                const system = ctx.options.getString("system", true);
+                if (enabled?.systems.some((sys) => sys.name === system && sys.enabled == false)) {
+                    return ctx.reply(`${capFirstLetter(system)} system is already disabled`);
+                }
+                Systems.clearPanel(ctx, system)
+              
+            },
+            default: async () => {
+                return ctx.reply("Invalid subcommand");
+            }
+        };
+        type Subcommands = keyof typeof subcommands;
+        const result = ((await subcommands[subcommand as Subcommands]) || subcommands.default)();
+        return result;
+    }
+
+
+
+})
