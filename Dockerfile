@@ -1,12 +1,12 @@
 FROM node:latest
 
-RUN npm install -g @sern/cli typescript@latest yarn@latest
+RUN npm install -g @sern/cli typescript@latest
 
 WORKDIR /app
 
 COPY package.json ./
 
-RUN yarn install
+RUN npm install
 
 COPY . .
 
