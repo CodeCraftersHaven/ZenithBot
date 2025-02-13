@@ -124,9 +124,13 @@ export default class Systems {
         const row = new ActionRowBuilder<ButtonBuilder>().addComponents(openTicket, checkTicket);
 
         if (system === "tickets") {
-            await sendMessages(channel, [infoEmbed, infoRow], [embed, row])
+            await sendMessages(channel, [infoEmbed, infoRow], [embed, row]).catch(async (e) => {
+                await ctx.reply({ content: `I can't access that channel. Please give me permissions. ${e.message}`, withResponse: true })
+            })
         } else {
-            await sendMessages(channel, [infoEmbed, infoRow])
+            await sendMessages(channel, [infoEmbed, infoRow]).catch(async (e) => {
+                await ctx.reply({ content: `I can't access that channel. Please give me permissions. ${e.message}`, withResponse: true })
+            })
         }
 
 
