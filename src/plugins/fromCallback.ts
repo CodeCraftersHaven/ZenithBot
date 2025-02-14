@@ -13,7 +13,7 @@
  * export default commandModule({
  *     type: CommandType.Both,
  *     plugins: [
- *         //This plugin prevents this command module from executing in other servers except myServer 
+ *         //This plugin prevents this command module from executing in other servers except myServer
  *         fromCallback((ctx, args) => ctx.guildId == myServer)
  *     ],
  *     execute: ctx => {
@@ -24,14 +24,13 @@
  * @end
  */
 
-
 import { PluginType, makePlugin, controller } from "@sern/handler";
 
-export const fromCallback = (cb: (...args: any[]) => boolean) => 
-    makePlugin(PluginType.Control, (...args) => {
-        //console.log(args)
-        if(cb.apply(null, args)) {
-            return controller.next();
-        }
-        return controller.stop();
-    });
+export const fromCallback = (cb: (...args: any[]) => boolean) =>
+  makePlugin(PluginType.Control, (...args) => {
+    //console.log(args)
+    if (cb.apply(null, args)) {
+      return controller.next();
+    }
+    return controller.stop();
+  });

@@ -49,7 +49,7 @@ function command(perm: PermissionResolvable, response?: string) {
       return controller.stop();
     }
     const _perms = (ctx.member as GuildMember).permissionsIn(
-      ctx.channel as TextChannel
+      ctx.channel as TextChannel,
     );
     if (!_perms.has(perm)) {
       await ctx.reply({
@@ -57,8 +57,8 @@ function command(perm: PermissionResolvable, response?: string) {
           sendEmbed(
             response ??
               `You are missing required permissions to run this command:\n${permsToString(
-                perm
-              )}`
+                perm,
+              )}`,
           ),
         ],
         ephemeral: !ctx.isMessage(),
@@ -71,8 +71,8 @@ function command(perm: PermissionResolvable, response?: string) {
           sendEmbed(
             response ??
               `You need at least one of the following permissions to run this command:\n${permsToString(
-                perm
-              )}`
+                perm,
+              )}`,
           ),
         ],
         ephemeral: !ctx.isMessage(),
@@ -85,7 +85,7 @@ function command(perm: PermissionResolvable, response?: string) {
 function subGroups(opts: BaseOptions[]) {
   return CommandControlPlugin<CommandType.Slash>(async (ctx) => {
     if (ctx.isMessage()) {
-      return controller.stop()
+      return controller.stop();
     }
     if (ctx.guild === null) {
       await ctx.reply({
@@ -103,7 +103,7 @@ function subGroups(opts: BaseOptions[]) {
       await ctx.reply({
         embeds: [
           sendEmbed(
-            `[PLUGIN_permCheck.subGroups]: Failed to find specified subcommandGroup \`${group}\`!`
+            `[PLUGIN_permCheck.subGroups]: Failed to find specified subcommandGroup \`${group}\`!`,
           ),
         ],
         ephemeral: true,
@@ -119,8 +119,8 @@ function subGroups(opts: BaseOptions[]) {
           sendEmbed(
             opt.response ??
               `You cannot use this group due to missing permissions: ${permsToString(
-                opt.perms
-              )}`
+                opt.perms,
+              )}`,
           ),
         ],
         ephemeral: true,
@@ -134,8 +134,8 @@ function subGroups(opts: BaseOptions[]) {
           sendEmbed(
             opt.response ??
               `You cannot use this group because you need at least one of the following permissions: ${permsToString(
-                opt.perms
-              )}`
+                opt.perms,
+              )}`,
           ),
         ],
         ephemeral: true,
@@ -150,7 +150,7 @@ function subGroups(opts: BaseOptions[]) {
 function subcommands(opts: BaseOptions[]) {
   return CommandControlPlugin<CommandType.Slash>(async (ctx) => {
     if (ctx.isMessage()) {
-      return controller.stop()
+      return controller.stop();
     }
     if (ctx.guild === null) {
       await ctx.reply({
@@ -168,7 +168,7 @@ function subcommands(opts: BaseOptions[]) {
       await ctx.reply({
         embeds: [
           sendEmbed(
-            `[PLUGIN_permCheck.subcommands]: Failed to find specified subcommand \`${sub}\`!`
+            `[PLUGIN_permCheck.subcommands]: Failed to find specified subcommand \`${sub}\`!`,
           ),
         ],
         ephemeral: true,
@@ -184,8 +184,8 @@ function subcommands(opts: BaseOptions[]) {
           sendEmbed(
             opt.response ??
               `You cannot use this subcommand due to missing permissions: ${permsToString(
-                opt.perms
-              )}`
+                opt.perms,
+              )}`,
           ),
         ],
         ephemeral: true,
@@ -199,8 +199,8 @@ function subcommands(opts: BaseOptions[]) {
           sendEmbed(
             opt.response ??
               `You cannot use this subcommand because you need at least one of the following permissions: ${permsToString(
-                opt.perms
-              )}`
+                opt.perms,
+              )}`,
           ),
         ],
         ephemeral: true,
@@ -215,7 +215,7 @@ function subcommands(opts: BaseOptions[]) {
 function options(opts: BaseOptions[]) {
   return CommandControlPlugin<CommandType.Slash>(async (ctx) => {
     if (ctx.isMessage()) {
-      return controller.stop()
+      return controller.stop();
     }
     if (ctx.guild === null) {
       await ctx.reply({
@@ -235,7 +235,7 @@ function options(opts: BaseOptions[]) {
         await ctx.reply({
           embeds: [
             sendEmbed(
-              `[PLUGIN_permCheck.options]: Could not find supplied option: \`${opt.name}\``
+              `[PLUGIN_permCheck.options]: Could not find supplied option: \`${opt.name}\``,
             ),
           ],
           ephemeral: true,
@@ -253,7 +253,7 @@ function options(opts: BaseOptions[]) {
                 opt.response ??
                   `You need all the following permissions for option \`${
                     opt.name
-                  }\`:\n ${permsToString(opt.perms)}`
+                  }\`:\n ${permsToString(opt.perms)}`,
               ),
             ],
             ephemeral: true,
@@ -268,7 +268,7 @@ function options(opts: BaseOptions[]) {
                 opt.response ??
                   `You need at least one of the following permissions for option \`${
                     opt.name
-                  }\`: \n${permsToString(opt.perms)}`
+                  }\`: \n${permsToString(opt.perms)}`,
               ),
             ],
             ephemeral: true,

@@ -1,14 +1,14 @@
 {
-    "extends": "./.sern/tsconfig.json",
-    "compilerOptions": {
-        "moduleResolution": "node",
-        "target": "ESNext",
-        "module": "ESNext",
-        "baseUrl": ".",
-        "paths": {
-            "#utils": ["src/utils/index"],
-            "#plugins": ["src/plugins/index"],
-            "#systems": ["src/systems/index"],
-        }
+  "extends": "./.sern/tsconfig.json",
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "target": "ESNext",
+    "module": "ESNext",
+    "baseUrl": ".",
+    "paths": {
+      "#utils": ["src/utils/index"],
+      "#plugins": ["src/plugins/index"],
+      "#systems": ["src/systems/index"]
     }
+  }
 }

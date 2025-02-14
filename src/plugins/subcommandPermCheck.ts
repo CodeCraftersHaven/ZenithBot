@@ -30,50 +30,76 @@
  * ```
  * @end
  */
-import { type GuildMember, type PermissionResolvable, type TextChannel, PermissionsBitField } from 'discord.js';
-import { type CommandType, CommandControlPlugin, controller } from '@sern/handler';
+import {
+  type GuildMember,
+  type PermissionResolvable,
+  type TextChannel,
+  PermissionsBitField,
+} from "discord.js";
+import {
+  type CommandType,
+  CommandControlPlugin,
+  controller,
+} from "@sern/handler";
 
 const permsToString = (...perms: PermissionResolvable[]) => {
   return new PermissionsBitField(perms)
     .toArray()
-    .map(perm => `\`${perm}\``)
-    .join(', ');
+    .map((perm) => `\`${perm}\``)
+    .join(", ");
 };
 
 export function subcommandPermCheck(opts: Options) {
-  return CommandControlPlugin<CommandType.Slash>(async ctx => {
+  return CommandControlPlugin<CommandType.Slash>(async (ctx) => {
     if (!ctx.isSlash()) {
-      throw new Error('You did not provide a slash command.', {
-        cause: "The plugin 'subcommandPermCheck' is meant for Slash commands only!"
+      throw new Error("You did not provide a slash command.", {
+        cause:
+          "The plugin 'subcommandPermCheck' is meant for Slash commands only!",
       });
     }
 
     if (ctx.guild === null) {
-      ctx.reply("PermCheck > A command stopped because we couldn't check a users permissions (was used in dms)");
+      ctx.reply(
+        "PermCheck > A command stopped because we couldn't check a users permissions (was used in dms)",
+      );
       return controller.stop();
     }
     const member = ctx.member as GuildMember;
     const subcommands = opts.list;
     const sub = ctx.options.getSubcommand();
 
-    if (!subcommands.some(opt => opt.name === sub)) {
-      throw new Error("You provided a subcommand name which doesn't exist in given command.", {
-        cause: `${sub} not found on command: ${ctx.interaction.commandName}.`
-      });
+    if (!subcommands.some((opt) => opt.name === sub)) {
+      throw new Error(
+        "You provided a subcommand name which doesn't exist in given command.",
+        {
+          cause: `${sub} not found on command: ${ctx.interaction.commandName}.`,
+        },
+      );
     }
     for (const { perms } of subcommands) {
       const each = permsToString(perms);
-      const memberPermissions = member.permissionsIn(ctx.channel as TextChannel);
-      const hasPermission = opts.needAllPerms ? memberPermissions.has(perms) : memberPermissions.any(perms);
+      const memberPermissions = member.permissionsIn(
+        ctx.channel as TextChannel,
+      );
+      const hasPermission = opts.needAllPerms
+        ? memberPermissions.has(perms)
+        : memberPermissions.any(perms);
 
       if (!hasPermission) {
-        const split = each.split(', ');
-        const quantifier = split.length > 1 ? (opts.needAllPerms ? 'all of' : 'at least one of') : '';
-        const str = `${quantifier} the following permission${split.length > 1 ? 's' : ''}`;
+        const split = each.split(", ");
+        const quantifier =
+          split.length > 1
+            ? opts.needAllPerms
+              ? "all of"
+              : "at least one of"
+            : "";
+        const str = `${quantifier} the following permission${split.length > 1 ? "s" : ""}`;
 
         await ctx.reply({
-          content: opts.response ?? `You are required to have ${str} to run this subcommand in this channel:\n${each}`,
-          ephemeral: true
+          content:
+            opts.response ??
+            `You are required to have ${str} to run this subcommand in this channel:\n${each}`,
+          ephemeral: true,
         });
         return controller.stop();
       }
