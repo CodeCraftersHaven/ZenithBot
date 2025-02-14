@@ -120,6 +120,7 @@ export default commandModule({
         const winners = ctx.options.getInteger("winners", true);
         const timeLeftString = ctx.options.getString("time", true);
 
+        // 🔽🔽🔽🔽 This portion came from sern community and hereby giving credit to all authors of such functions
         let timeUnit1;
         let timeLeft1;
         let timeUnit2;
@@ -179,6 +180,7 @@ export default commandModule({
         const endTimeStamp: string = `<t:${Math.floor(endTime!.getTime() / 1000)}:f>`;
         const endTimeStamp2 = new Timestamp(endTime.getTime()).timestamp;
 
+        // ⬆️⬆️⬆️⬆️ End of portion where credits are due... [kingomes](https://github.com/kingomes)
         const embed: EmbedBuilder = new EmbedBuilder({
           title: `New Giveaway Started!`,
           fields: [
@@ -279,7 +281,6 @@ export default commandModule({
         if (!giveaways.length) {
           return await ctx.reply("No giveaways found.");
         }
-        // return the following line as an embed
         const embed = new EmbedBuilder({
           title: "Giveaways",
           fields: giveaways.map((g) => ({
