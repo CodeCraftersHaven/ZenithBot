@@ -10,7 +10,9 @@
 		"start": "node .",
 		"commands:publish": "sern commands publish",
 		"gen": "prisma generate",
-		"push": "prisma db push"
+		"push": "prisma db push",
+		"prettier": "npm prettier -w src",
+		"prepare": "husky"
 	},
 	"keywords": [
 		"typescript",
@@ -28,6 +30,10 @@
 	},
 	"devDependencies": {
 		"@types/node": "^22.12.0",
+		"git-format-staged": "^3.1.1",
+		"husky": "^9.1.7",
+		"lint-staged": "^15.4.3",
+		"prettier": "3.5.1",
 		"prisma": "^6.3.1",
 		"typescript": "^5.0"
 	},
@@ -36,5 +42,9 @@
 		"#utils": "./dist/utils/index.js",
 		"#plugins": "./dist/plugins/index.js",
 		"#systems": "./dist/systems/index.js"
-	}
+	},
+	"lint-staged": {
+		"**/*": "prettier --write --ignore-unknown"
+	},
+	"packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
