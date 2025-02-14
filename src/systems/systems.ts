@@ -1,54 +1,38 @@
 import { capFirstLetter } from "#utils";
 import { PrismaClient } from "@prisma/client";
-import { Context, Service } from "@sern/handler";
+import { Service } from "@sern/handler";
 import {
   ActionRowBuilder,
-  AnyComponentBuilder,
   ButtonBuilder,
-  ButtonInteraction,
   ButtonStyle,
-  CacheType,
-  ChatInputCommandInteraction,
   Client,
   EmbedBuilder,
   MessageActionRowComponentBuilder,
-  MessageComponentInteraction,
-  OverwriteResolvable,
-  PermissionResolvable,
-  PermissionsBitField,
   TextChannel,
 } from "discord.js";
 
 export default class Systems {
   private db: PrismaClient = Service("@prisma/client");
   private c: Client = Service("@sern/client");
-
-  constructor() {}
+  private guildId: string;
+  private channel!: TextChannel;
+  private system: string;
+  constructor(guildId: string, system: string, channel?: TextChannel) {
+    this.guildId = guildId;
+    this.system = system;
+    this.channel = channel!;
+  }
   async createPanel(
-    ctx: CTX,
-    channel: TextChannel,
-    system: string,
-    opts: Partial<PanelOpts>,
-  ) {
-    const currentPermissions: Permission[] =
-      channel.permissionOverwrites.cache.map((overwrite) => ({
-        id: overwrite.id,
-        allow: overwrite.allow
-          .toArray()
-          .map((perm) => new PermissionsBitField(perm)),
-        deny: overwrite.deny
-          .toArray()
-          .map((perm) => new PermissionsBitField(perm)),
-      }));
+  ): Promise<string> {
     const existingChannel = await this.db.systems.findFirst({
       where: {
-        id: ctx.guild?.id,
+        id: this.guildId,
         systems: {
           some: {
             enabled: true,
             channels: {
               every: {
-                id: channel.id,
+                id: this.channel.id,
               },
             },
           },
@@ -56,40 +40,29 @@ export default class Systems {
       },
     });
     if (existingChannel) {
-      return await ctx.reply({
-        content: "This channel is already in use.",
-        withResponse: true,
-      });
+      return "This channel is already in use."
     }
 
     const existingSystems = await this.db.systems.findUnique({
-      where: { id: ctx.guild?.id! },
+      where: { id: this.guildId },
       select: { systems: true },
     });
 
     const systemExistsInChannel = existingSystems?.systems.some(
-      (s) => s.name === system && s.channels.some((c) => c.id === channel.id),
+      (s) => s.name === this.system && s.channels.some((c) => c.id === this.channel.id),
     );
 
     if (systemExistsInChannel) {
-      return ctx.reply({
-        content: "This system is already enabled in this channel.",
-        withResponse: true,
-      });
+      return "This system is already enabled in this channel."
     }
 
     const infoEmbed = new EmbedBuilder({
-      title: "Channel Locked",
+      title: "System Enabled!",
       fields: [
         {
           name: "Reason",
-          value: `${capFirstLetter(system)} system has been set up in this channel.`,
-        },
-        {
-          name: "Info",
-          value:
-            "This channel has been locked for the setup of the selected system. Only administrators and the bot can send messages here.",
-        },
+          value: `${capFirstLetter(this.system)} system has been set up in this channel.`,
+        }
       ],
     });
 
@@ -126,121 +99,73 @@ export default class Systems {
     );
 
     try {
-      if (system === "tickets") {
-        await this.sendMessages(channel, [infoEmbed, infoRow], [embed, row]);
+      if (this.system === "tickets") {
+        await this.sendMessages(this.channel, [infoEmbed, infoRow], [embed, row]);
       } else {
-        await this.sendMessages(channel, [infoEmbed, infoRow]);
+        await this.sendMessages(this.channel, [infoEmbed, infoRow]);
       }
-      await channel.permissionOverwrites
-        .set([
-          {
-            id: channel.guild.roles.everyone.id,
-            deny: PermissionsBitField.resolve(
-              Object.keys(PermissionsBitField.Flags).filter(
-                (perm) => perm !== "ViewChannel",
-              ) as PermissionResolvable[],
-            ),
-            allow: ["ViewChannel"],
-          },
-          {
-            id: this.c.user?.id!,
-            allow: PermissionsBitField.resolve(
-              Object.keys(PermissionsBitField.Flags) as PermissionResolvable[],
-            ),
-          },
-        ])
-        .then(async () => {
-          await this.db.systems.update({
-            where: { id: ctx.guild?.id! },
-            data: {
-              systems: {
-                updateMany: {
-                  where: { name: system },
-                  data: {
-                    enabled: true,
-                    name: system,
-                    channels: {
-                      set: [
-                        {
-                          id: channel.id,
-                          name: channel.name,
-                          perms: currentPermissions.map((permission) => ({
-                            id: permission.id,
-                            allow: permission.allow
-                              .reduce(
-                                (acc, perm) => acc | BigInt(perm.bitfield),
-                                BigInt(0),
-                              )
-                              .toString(),
-                            deny: permission.deny
-                              .reduce(
-                                (acc, perm) => acc | BigInt(perm.bitfield),
-                                BigInt(0),
-                              )
-                              .toString(),
-                          })),
-                        },
-                      ],
+
+      await this.db.systems.update({
+        where: { id: this.guildId },
+        data: {
+          systems: {
+            updateMany: {
+              where: { name: this.system },
+              data: {
+                enabled: true,
+                name: this.system,
+                channels: {
+                  set: [
+                    {
+                      id: this.channel.id,
+                      name: this.channel.name,
                     },
-                  },
+                  ],
                 },
               },
             },
-          });
-          await ctx.reply({
-            content: `Enabled ${capFirstLetter(system)} system in <#${channel.id}>`,
-            withResponse: true,
-          });
-        });
-    } catch (error: any) {
-      return await ctx.reply({
-        content:
-          "I'm missing permissions to change the channel's permissions." +
-          error.message,
-        withResponse: true,
+          },
+        },
       });
+    } catch (error: any) {
+      return `Failed to update database or send panel(s) to <#${this.channel.id}>. Please let <@342314924804014081> know this error: 
+        ${error.message}`
     }
+    return `Enabled ${capFirstLetter(this.system)} system in <#${this.channel.id}>`
   }
 
-  async clearPanel(ctx: CTX, system: string) {
+  async clearPanel(): Promise<string> {
     const infoEmbed = new EmbedBuilder({
-      title: "Channel Unlocked",
+      title: "System Disabled!",
       fields: [
         {
           name: "Reason",
-          value: `${capFirstLetter(system)} has been disabled for this server!`,
-        },
-        {
-          name: "Info",
-          value:
-            "This channel's permissions have been reverted to previously set permissions.",
-        },
+          value: `${capFirstLetter(this.system)} has been disabled for this server!`,
+        }
       ],
     });
     const currentSystem = await this.db.systems.findMany({
       where: {
-        id: ctx.guild?.id!,
-        systems: { some: { name: system, enabled: true } },
+        id: this.guildId,
+        systems: { some: { name: this.system, enabled: true } },
       },
     });
     const channelData = currentSystem[0]?.systems.find(
-      (s) => s.name === system,
+      (s) => s.name === this.system,
     )?.channels;
     channelData?.forEach(async (c) => {
       const channel = (await this.c.channels.fetch(c.id)) as TextChannel;
       await channel.messages.fetch({ limit: 100 }).then(async (messages) => {
         if (!messages) return;
         const clientMessages = messages.filter(
-          (msg) => msg.author.id === channel.client.user?.id && msg.embeds,
+          (msg) => msg.author.id === this.c.user?.id && msg.embeds,
         );
         clientMessages.forEach(async (msg) => {
           if (msg && msg.deletable) {
             await msg.delete();
           }
         });
-        const perms = c?.perms!;
         const rep = await channel.send({ embeds: [infoEmbed] });
-        await channel.permissionOverwrites.set(perms as OverwriteResolvable[]);
         setTimeout(async () => {
           await rep.delete();
         }, 6e4);
@@ -248,32 +173,20 @@ export default class Systems {
     });
 
     await this.db.systems.update({
-      where: { id: ctx.guild?.id! },
+      where: { id: this.guildId },
       data: {
         systems: {
           updateMany: {
-            where: { name: system },
+            where: { name: this.system },
             data: { enabled: false, channels: [] },
           },
         },
       },
     });
 
-    if (ctx instanceof MessageComponentInteraction) {
-      ctx.deferred
-        ? ctx.editReply({
-            content: `Disabled ${capFirstLetter(system)} system`,
-          })
-        : ctx.reply({
-            content: `Disabled ${capFirstLetter(system)} system`,
-            withResponse: true,
-          });
-    } else {
-      return ctx.reply({
-        content: `Disabled ${capFirstLetter(system)} system`,
-        withResponse: true,
-      });
-    }
+
+    return `Disabled ${capFirstLetter(this.system)} system`
+
   }
   async sendMessages(
     channel: TextChannel,
@@ -287,19 +200,5 @@ export default class Systems {
     }
   }
 }
-interface PanelOpts {
-  name: string;
-  system: string;
-}
-interface Permission {
-  id: string;
-  allow: PermissionsBitField[];
-  deny: PermissionsBitField[];
-}
-type CTX =
-  | (Context & {
-      readonly options: ChatInputCommandInteraction["options"];
-    })
-  | MessageComponentInteraction<CacheType>;
 
 export type systems = typeof Systems;

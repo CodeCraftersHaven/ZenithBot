@@ -96,13 +96,6 @@ type System {
 type Channel {
   name  String
   id    String
-  perms Permission[]
-}
-
-type Permission {
-  id    String
-  allow String
-  deny  String
 }
 
 //-------------------------------
@@ -122,5 +115,11 @@ type User {
   feeling  String?
   comment  String?
 }
+
+//-------------------------------
+//------COUNTING SYSTEM----------
+//-------------------------------
+
+
 
 //-------------------------------

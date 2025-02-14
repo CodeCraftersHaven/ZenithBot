@@ -72,12 +72,12 @@ export default commandModule({
       select: { systems: true },
     });
     const subcommand = ctx.options.getSubcommand();
-    const Systems = new sys();
+
     const subcommands = {
       enable: async () => {
         const system = ctx.options.getString("system", true);
         const channel = ctx.options.getChannel("channel", true) as TextChannel;
-
+        const Systems = new sys(guildId!, system, channel);
         if (
           system === "selfroles" &&
           ctx.guildId !== process.env.HOME_SERVER_ID!
@@ -86,10 +86,12 @@ export default commandModule({
             "This system is still in development. Please be patient.",
           );
         }
-        Systems.createPanel(ctx, channel, system, {});
+        const panel = await Systems.createPanel();
+        return await ctx.reply(panel)
       },
       disable: async () => {
         const system = ctx.options.getString("system", true);
+        const Systems = new sys(guildId!, system);
         if (
           enabled?.systems.some(
             (sys) => sys.name === system && sys.enabled == false,
@@ -99,7 +101,7 @@ export default commandModule({
             `${capFirstLetter(system)} system is already disabled`,
           );
         }
-        Systems.clearPanel(ctx, system);
+        Systems.clearPanel();
       },
       default: async () => {
         return ctx.reply("Invalid subcommand");
