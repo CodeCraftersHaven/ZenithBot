@@ -47,7 +47,7 @@ export default scheduledTask({
         r6.set(g.id, [siegePlayersCount, total]);
         // console.log(`Guild ID: ${g.id} has ${siegePlayersCount} Siege Player${siegePlayersCount > 1 || siegePlayersCount < 1 ? "s" : ""}`);
       } catch (error) {
-        return logger.error(error);
+        return logger.error(`R6Tracker: ${error}`);
       }
     });
     r6.forEach((_, g, [s, t]) => {
