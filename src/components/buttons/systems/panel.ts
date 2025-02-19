@@ -6,6 +6,7 @@ import {
   MessageFlags,
   ModalActionRowComponentBuilder,
   ModalBuilder,
+  TextChannel,
   TextInputBuilder,
   TextInputStyle,
 } from "discord.js";
@@ -19,7 +20,7 @@ export default commandModule({
       deps["systems"].Systems,
       deps["@prisma/client"].feedback,
     ];
-    
+
     const act = params! as "delete" | "like" | "dislike" | "comment";
 
     const userFeedback = await feedback.findMany({
@@ -37,7 +38,6 @@ export default commandModule({
     });
     const acts = {
       delete: async () => {
-        
         await ctx.deferReply({ flags: MessageFlags.Ephemeral });
         const embed = ctx.message.embeds[0];
         const reasonFieldValue = embed.fields.find(
@@ -47,9 +47,13 @@ export default commandModule({
         if (reasonFieldValue) {
           system = reasonFieldValue.split(" ")[0].toLowerCase();
         }
-        const Systems = new sys(ctx.guild?.id!, system);
+        const Systems = new sys(
+          ctx.guild?.id!,
+          system,
+          ctx.channel as TextChannel,
+        );
         const remove = await Systems.clearPanel();
-        return await ctx.editReply(remove)
+        return await ctx.editReply(remove);
       },
       like: async () => {
         await ctx.deferReply({ flags: MessageFlags.Ephemeral });
