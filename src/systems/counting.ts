@@ -27,7 +27,8 @@ export default class Counting {
       },
     });
 
-    if (this.message.author.bot || isNaN(parseInt(this.message.content))) return;
+    if (this.message.author.bot || isNaN(parseInt(this.message.content)))
+      return;
 
     if (!system) return;
     const userId = this.message.author.id;
@@ -64,7 +65,10 @@ export default class Counting {
     const channels = system.systems.flatMap((s) => s.channels);
     channels.forEach(async (channel) => {
       if (channel.id === this.message.channelId) {
-        if (parseInt(this.message.content) === expectedCount && this.message.author.id !== countingData?.lastUser) {
+        if (
+          parseInt(this.message.content) === expectedCount &&
+          this.message.author.id !== countingData?.lastUser
+        ) {
           countingData = await this.prisma.counting.update({
             where: { id: guildId },
             data: {
@@ -76,7 +80,6 @@ export default class Counting {
           this.applyCooldown(userId);
           await this.message.react("✅");
         } else {
-          
           await this.message.react("❌");
           if (this.message.author.id === countingData?.lastUser) {
             const wrongUserMessages = [

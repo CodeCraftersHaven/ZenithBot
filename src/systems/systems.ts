@@ -1,6 +1,9 @@
 import { capFirstLetter, logger } from "#utils";
 import { Prisma, PrismaClient } from "@prisma/client";
-import { PrismaClientOptions, DefaultArgs } from "@prisma/client/runtime/library";
+import {
+  PrismaClientOptions,
+  DefaultArgs,
+} from "@prisma/client/runtime/library";
 import { Service } from "@sern/handler";
 import {
   ActionRowBuilder,
@@ -209,13 +212,23 @@ export default class Systems {
         systemData.systems.splice(systemIndex, 1);
 
         if (this.system in this.db) {
-          const model = this.db[this.system as keyof Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use'>];
-          if (model && typeof model === 'object' && 'delete' in model) {
-            await (model as Prisma.SystemsDelegate<DefaultArgs>).delete({
-              where: { id: this.guildId },
-            }).catch((err: any) => {
-              logger.warn(`Failed to delete system '${this.system}': ${err.message}`);
-            });
+          const model =
+            this.db[
+              this.system as keyof Omit<
+                PrismaClient,
+                "$connect" | "$disconnect" | "$on" | "$transaction" | "$use"
+              >
+            ];
+          if (model && typeof model === "object" && "delete" in model) {
+            await (model as Prisma.SystemsDelegate<DefaultArgs>)
+              .delete({
+                where: { id: this.guildId },
+              })
+              .catch((err: any) => {
+                logger.warn(
+                  `Failed to delete system '${this.system}': ${err.message}`,
+                );
+              });
             deletedSystem = true;
           }
         }
@@ -235,7 +248,6 @@ export default class Systems {
       const confirmationMessage = await this.channel.send({
         embeds: [confirmationEmbed],
       });
-
 
       setTimeout(() => {
         confirmationMessage
