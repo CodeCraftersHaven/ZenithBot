@@ -27,7 +27,7 @@ export default class Counting {
       },
     });
 
-    if (this.message.author.bot) return;
+    if (this.message.author.bot || isNaN(parseInt(this.message.content))) return;
 
     if (!system) return;
     const userId = this.message.author.id;
@@ -53,9 +53,9 @@ export default class Counting {
       countingData = await this.prisma.counting.create({
         data: {
           id: guildId,
-          count: 1,
+          count: 0,
           lastUser: userId,
-          lastCount: 0,
+          lastCount: -1,
         },
       });
     }
@@ -64,7 +64,6 @@ export default class Counting {
     const channels = system.systems.flatMap((s) => s.channels);
     channels.forEach(async (channel) => {
       if (channel.id === this.message.channelId) {
-        if (isNaN(parseInt(this.message.content))) return;
         if (parseInt(this.message.content) === expectedCount && this.message.author.id !== countingData?.lastUser) {
           countingData = await this.prisma.counting.update({
             where: { id: guildId },
@@ -108,15 +107,15 @@ export default class Counting {
               Math.floor(Math.random() * wrongNumberMessages.length)
             ];
           await this.message.reply({
-            content: `${randomMessage} The next number should be ${expectedCount}. Start back at \`1\`!`,
+            content: `${randomMessage} The next number should be ${expectedCount}. Start back at \`0\`!`,
           });
 
           await this.prisma.counting.update({
             where: { id: guildId },
             data: {
-              count: 1,
+              count: 0,
               lastUser: userId,
-              lastCount: 0,
+              lastCount: -1,
             },
           });
         }
