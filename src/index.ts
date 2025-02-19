@@ -4,7 +4,15 @@ import { Client, GatewayIntentBits } from "discord.js";
 import { Sern, makeDependencies } from "@sern/handler";
 import { Publisher } from "@sern/publisher";
 import { logger, prisma } from "#utils";
-import { SelfRoles, Giveaways, Tickets, Systems } from "#systems";
+import {
+  Counting,
+  Giveaways,
+  SelfRoles,
+  Systems,
+  Tickets,
+  Tracker,
+  Welcome,
+} from "#systems";
 
 const client = new Client({
   intents: [
@@ -24,10 +32,13 @@ await makeDependencies(({ add, swap }) => {
   add("@prisma/client", prisma);
   swap("@sern/logger", logger);
   add("systems", {
-    SelfRoles: SelfRoles.default,
+    Counting: Counting.default,
     Giveaway: Giveaways.default,
-    Tickets: Tickets.default,
+    SelfRoles: SelfRoles.default,
     Systems: Systems.default,
+    Tickets: Tickets.default,
+    Tracker: Tracker.default,
+    Welcome: Welcome.default,
   });
   add(
     "publisher",

@@ -9,7 +9,15 @@ import type { Client } from "discord.js";
 import type { Publisher } from "@sern/publisher";
 import type { Logger } from "winston";
 import type { PrismaClient } from "@prisma/client";
-import type { SelfRoles, Giveaways, Systems, Tickets } from "#systems";
+import type {
+  Counting,
+  Giveaways,
+  SelfRoles,
+  Systems,
+  Tickets,
+  Tracker,
+  Welcome,
+} from "#systems";
 /**
  * Note: You usually would not need to modify this unless there is an urgent need to break the contracts provided.
  * You would need to modify this to add your custom Services, however.
@@ -21,10 +29,13 @@ declare global {
     "@sern/logger": Logger;
     "@prisma/client": PrismaClient;
     systems: {
-      SelfRoles: SelfRoles.selfroles;
+      Counting: Counting.counting;
       Giveaway: Giveaways.giveaway;
-      Tickets: Tickets.tickets;
+      R6tracker: Tracker.tracker;
+      SelfRoles: SelfRoles.selfroles;
       Systems: Systems.systems;
+      Tickets: Tickets.tickets;
+      Welcome: Welcome.welcome;
     };
     process: NodeJS.Process;
   }
