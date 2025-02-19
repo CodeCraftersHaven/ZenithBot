@@ -13,7 +13,7 @@ import {
   TextChannel,
 } from "discord.js";
 import { add } from "date-fns";
-import { Timestamp } from "#utils";
+import { checkIfSystemEnabled, getEnableCommand, Timestamp } from "#utils";
 
 export default commandModule({
   type: CommandType.Slash,
@@ -94,21 +94,21 @@ export default commandModule({
       deps["@sern/client"],
       deps["@sern/logger"],
     ];
-    const enabled = await prisma.systems.findFirst({
-      where: {
-        id: ctx.guild?.id!,
-        systems: { some: { name: "giveaways", enabled: true } },
-      },
-    });
-    if (!enabled) {
+    const isSystemEnabled = await checkIfSystemEnabled(
+      prisma.systems,
+      ctx.guild?.id!,
+      "giveaways",
+    );
+    if (!isSystemEnabled) {
       new Giveaway(false);
       return ctx.reply(
-        "The giveaways system is not enabled in this server. Please use </system enable:1335686173011476501>",
+        `The giveaways system is not enabled in this server. Please use <system enable:${getEnableCommand(client)}> to enable it.`,
       );
     }
     const giveaway = new Giveaway(true);
-    const channelId = enabled.systems.find((sys) => sys.name === "giveaways")
-      ?.channels[0].id!;
+    const channelId = isSystemEnabled.systems.find(
+      (sys) => sys.name === "giveaways",
+    )?.channels[0].id!;
     const subcommand = ctx.options.getSubcommand();
 
     const subcommands = {
