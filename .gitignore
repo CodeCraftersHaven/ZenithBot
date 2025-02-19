@@ -6,3 +6,5 @@ dist
 .npmignore
 response.log
 runtime.logs
+*.lock
+package-lock.json
