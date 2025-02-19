@@ -64,6 +64,7 @@ export default class Counting {
     const channels = system.systems.flatMap((s) => s.channels);
     channels.forEach(async (channel) => {
       if (channel.id === this.message.channelId) {
+        if (isNaN(parseInt(this.message.content))) return;
         if (parseInt(this.message.content) === expectedCount && this.message.author.id !== countingData?.lastUser) {
           countingData = await this.prisma.counting.update({
             where: { id: guildId },
@@ -76,6 +77,7 @@ export default class Counting {
           this.applyCooldown(userId);
           await this.message.react("✅");
         } else {
+          
           await this.message.react("❌");
           if (this.message.author.id === countingData?.lastUser) {
             const wrongUserMessages = [
