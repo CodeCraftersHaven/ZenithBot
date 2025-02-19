@@ -30,9 +30,12 @@ export default commandModule({
           description: "the system to enable",
           type: ApplicationCommandOptionType.String,
           choices: [
-            { name: "tickets", value: "tickets" },
+            { name: "counting", value: "counting" },
             { name: "giveaways", value: "giveaways" },
+            { name: "r6tracker", value: "r6tracker" },
             { name: "selfroles", value: "selfroles" },
+            { name: "tickets", value: "tickets" },
+            { name: "welcome", value: "welcome" },
           ],
           required: true,
         },
@@ -54,11 +57,30 @@ export default commandModule({
           name: "system",
           description: "the system to disable",
           type: ApplicationCommandOptionType.String,
-          choices: [
-            { name: "tickets", value: "tickets" },
-            { name: "giveaways", value: "giveaways" },
-            { name: "selfroles", value: "selfroles" },
-          ],
+          autocomplete: true,
+          command: {
+            async execute(ctx, { deps }) {
+              const [system] = [deps["@prisma/client"].systems];
+              const focusedOption = ctx.options.getFocused().toLowerCase();
+              const systemResult = await system.findFirst({
+                where: { id: ctx.guild?.id! },
+                select: { systems: true },
+              });
+              if (!systemResult) {
+                return ctx.respond([]);
+              }
+              const filter = systemResult.systems
+                .filter(
+                  (sys) => sys.name.includes(focusedOption) && sys.enabled,
+                )
+                .map((sys) => ({
+                  name: sys.name,
+                  value: `${sys.name}-${sys.channels[0].id}`,
+                }));
+              await ctx.respond(filter);
+            },
+          },
+
           required: true,
         },
       ],
@@ -79,7 +101,7 @@ export default commandModule({
         const channel = ctx.options.getChannel("channel", true) as TextChannel;
         const Systems = new sys(guildId!, system, channel);
         if (
-          system === "selfroles" &&
+          (system === "selfroles" || system === "counting") &&
           ctx.guildId !== process.env.HOME_SERVER_ID!
         ) {
           return await ctx.reply(
@@ -87,11 +109,15 @@ export default commandModule({
           );
         }
         const panel = await Systems.createPanel();
-        return await ctx.reply(panel)
+        return await ctx.reply(panel);
       },
       disable: async () => {
         const system = ctx.options.getString("system", true);
-        const Systems = new sys(guildId!, system);
+        const Systems = new sys(
+          guildId!,
+          system.split("-")[0],
+          ctx.guild?.channels.cache.get(system.split("-")[1]) as TextChannel,
+        );
         if (
           enabled?.systems.some(
             (sys) => sys.name === system && sys.enabled == false,
@@ -101,7 +127,8 @@ export default commandModule({
             `${capFirstLetter(system)} system is already disabled`,
           );
         }
-        Systems.clearPanel();
+        const res = await Systems.clearPanel();
+        return await ctx.reply(res);
       },
       default: async () => {
         return ctx.reply("Invalid subcommand");
