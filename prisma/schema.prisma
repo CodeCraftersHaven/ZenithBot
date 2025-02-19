@@ -123,7 +123,7 @@ type User {
 //-------------------------------
 
 model Counting {
-  id   String @id @map("_id")
+  id        String @id @map("_id")
   count     Int
   lastUser  String
   lastCount Int
