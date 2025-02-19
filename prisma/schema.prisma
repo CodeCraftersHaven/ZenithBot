@@ -41,7 +41,7 @@ type Entry {
 //-------------------------------
 
 model UserTicket {
-  id      String  @id @map("_id")
+  id     String  @id @map("_id")
   guilds Guild[]
 }
 
@@ -61,21 +61,18 @@ type Ticket {
 //-------------------------------
 
 model SelfRoles {
-  id       String    @id @map("_id") @db.ObjectId
-  guildId  String
+  id       String    @id @map("_id")
   messages Message[]
 }
 
 type Message {
   id    String
   title String
-  roles Roles[]
+  roles Roles
 }
 
 type Roles {
-  emoji  String
-  name   String
-  roleId String
+  roleId String[]
 }
 
 //-------------------------------
@@ -94,8 +91,13 @@ type System {
 }
 
 type Channel {
-  name  String
-  id    String
+  name     String
+  id       String
+  messages SMessage[]
+}
+
+type SMessage {
+  id String
 }
 
 //-------------------------------
@@ -120,6 +122,11 @@ type User {
 //------COUNTING SYSTEM----------
 //-------------------------------
 
-
+model Counting {
+  id   String @id @map("_id")
+  count     Int
+  lastUser  String
+  lastCount Int
+}
 
 //-------------------------------
