@@ -10,6 +10,7 @@ RUN npm install
 
 COPY src /zenith/src
 COPY prisma /zenith/prisma
+COPY assets /zenith/assets
 
 RUN sern build
 
