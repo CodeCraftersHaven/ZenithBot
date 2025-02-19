@@ -13,6 +13,7 @@ const statuses = [
   [ActivityType.Watching, "Everyone", "online"],
   [ActivityType.Listening, "Glitch", "dnd"],
   [ActivityType.Playing, "with @sern/cli", "idle"],
+  [ActivityType.Streaming, "Rainbow Six Siege", "dnd"],
 ] satisfies [ActivityType, string, ClientPresenceStatus][];
 
 export default Presence.module({
