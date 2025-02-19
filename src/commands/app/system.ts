@@ -101,7 +101,7 @@ export default commandModule({
         const channel = ctx.options.getChannel("channel", true) as TextChannel;
         const Systems = new sys(guildId!, system, channel);
         if (
-          (system === "selfroles" || system === "counting") &&
+          (system === "selfroles") &&
           ctx.guildId !== process.env.HOME_SERVER_ID!
         ) {
           return await ctx.reply(
