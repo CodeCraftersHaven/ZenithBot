@@ -4,7 +4,7 @@ export const commands = ["dist/commands", "dist/components"];
 export const events = "dist/events";
 
 // schedule tasks and declare them here
-export const tasks = "dist/tasks";
+// export const tasks = "dist/tasks";
 
 // defaultPrefix: if omitted, sern will disable all text/prefix commands
 export const defaultPrefix = "?";
