@@ -1,50 +1,52 @@
 {
-	"name": "zenithbot",
-	"version": "1.0.0",
-	"private": true,
-	"description": "",
-	"main": "dist/index.js",
-	"scripts": {
-		"build": "rm -rf dist && sern build",
-		"buildw": "rm -rf dist && sern build --watch",
-		"start": "node .",
-		"commands:publish": "sern commands publish",
-		"gen": "prisma generate",
-		"push": "prisma db push",
-		"prettier": "npm prettier -w src",
-		"prepare": "husky"
-	},
-	"keywords": [
-		"typescript",
-		"sern",
-		"discord.js"
-	],
-	"dependencies": {
-		"@prisma/client": "6.3.1",
-		"@sern/handler": "^4.2.1",
-		"@sern/publisher": "^1.1.2",
-		"date-fns": "3.6.0",
-		"discord.js": "^14.17.3",
-		"dotenv": "^16.4.7",
-		"winston": "^3.17.0"
-	},
-	"devDependencies": {
-		"@types/node": "^22.12.0",
-		"git-format-staged": "^3.1.1",
-		"husky": "^9.1.7",
-		"lint-staged": "^15.4.3",
-		"prettier": "3.5.1",
-		"prisma": "^6.3.1",
-		"typescript": "^5.0"
-	},
-	"type": "module",
-	"imports": {
-		"#utils": "./dist/utils/index.js",
-		"#plugins": "./dist/plugins/index.js",
-		"#systems": "./dist/systems/index.js"
-	},
-	"lint-staged": {
-		"**/*": "prettier --write --ignore-unknown"
-	},
-	"packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+  "name": "zenithbot",
+  "version": "1.0.0",
+  "private": true,
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "rm -rf dist && sern build",
+    "buildw": "rm -rf dist && sern build --watch",
+    "start": "node .",
+    "start-gen": "node . --dbgen",
+    "start-push": "node . --dbpush",
+    "gen": "prisma generate",
+    "push": "prisma db push",
+    "prettier": "npx prettier . --write",
+    "prepare": "husky"
+  },
+  "keywords": [
+    "typescript",
+    "sern",
+    "discord.js"
+  ],
+  "dependencies": {
+    "@prisma/client": "6.3.1",
+    "@sern/handler": "^4.2.1",
+    "@sern/publisher": "^1.1.2",
+    "canvas": "^3.1.0",
+    "date-fns": "3.6.0",
+    "discord.js": "^14.17.3",
+    "dotenv": "^16.4.7",
+    "winston": "^3.17.0"
+  },
+  "devDependencies": {
+    "@sern/cli": "^1.4.0",
+    "@types/node": "^22.12.0",
+    "git-format-staged": "^3.1.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.4.3",
+    "prettier": "3.5.1",
+    "prisma": "^6.3.1",
+    "typescript": "^5.0"
+  },
+  "type": "module",
+  "imports": {
+    "#utils": "./dist/utils/index.js",
+    "#plugins": "./dist/plugins/index.js",
+    "#systems": "./dist/systems/index.js"
+  },
+  "lint-staged": {
+    "**/*": "prettier --write --ignore-unknown"
+  }
 }

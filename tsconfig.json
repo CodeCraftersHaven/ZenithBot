@@ -9,6 +9,8 @@
       "#utils": ["src/utils/index"],
       "#plugins": ["src/plugins/index"],
       "#systems": ["src/systems/index"]
-    }
+    },
+    "allowSyntheticDefaultImports": true,
+    "pretty": true
   }
 }
