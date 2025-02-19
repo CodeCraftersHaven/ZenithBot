@@ -4,5 +4,4 @@ export * from "./prismaErrors.js";
 export * from "./functions.js";
 export * from "./timestamp.js";
 export * from "../presence.js";
-export * from "./r6tracker.js";
 export * from "../presence.js";
