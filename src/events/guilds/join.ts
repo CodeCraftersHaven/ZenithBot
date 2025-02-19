@@ -2,7 +2,6 @@ import { eventModule, EventType, Services } from "@sern/handler";
 import {
   AuditLogEvent,
   Events,
-  Message,
   MessageCreateOptions,
   MessagePayload,
   TextChannel,
@@ -10,6 +9,7 @@ import {
 import * as path from "path";
 import * as fs from "fs";
 import { fileURLToPath } from "url";
+import { getEnableCommand } from "#utils";
 
 export default eventModule({
   type: EventType.Discord,
@@ -49,9 +49,7 @@ export default eventModule({
       logger.info("Could not determine who invited the bot.");
     }
 
-    const commands = await c.application?.commands.fetch();
-
-    const cmd = commands?.find((cmd) => cmd.name === "system")!;
+    const cmd = await getEnableCommand(c);
     const firstChannel = guild.channels.cache
       .filter(
         (channel) =>
@@ -89,7 +87,7 @@ export default eventModule({
         },
         {
           name: "Starting Command",
-          value: `Please run </system enable:${cmd.id}> to get started using me!`,
+          value: `Please run </system enable:${cmd}> to get started using me!`,
         },
       ],
     };
