@@ -14,7 +14,7 @@ export default commandModule({
   description: "enable or disable systems",
   plugins: [
     publishConfig({
-      defaultMemberPermissions: PermissionsBitField.Flags.Administrator,
+      defaultMemberPermissions: PermissionsBitField.Flags.ManageGuild,
       integrationTypes: ["Guild"],
       contexts: [IntegrationContextType.GUILD],
     }),
@@ -101,7 +101,7 @@ export default commandModule({
         const channel = ctx.options.getChannel("channel", true) as TextChannel;
         const Systems = new sys(guildId!, system, channel);
         if (
-          (system === "selfroles") &&
+          system === "selfroles" &&
           ctx.guildId !== process.env.HOME_SERVER_ID!
         ) {
           return await ctx.reply(

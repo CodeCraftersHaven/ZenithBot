@@ -39,6 +39,9 @@ export default commandModule({
     const acts = {
       delete: async () => {
         await ctx.deferReply({ flags: MessageFlags.Ephemeral });
+        if (!ctx.memberPermissions?.has("ManageGuild")) {
+          return await ctx.editReply("You can't delete this message.");
+        }
         const embed = ctx.message.embeds[0];
         const reasonFieldValue = embed.fields.find(
           (f) => f.name === "Reason",

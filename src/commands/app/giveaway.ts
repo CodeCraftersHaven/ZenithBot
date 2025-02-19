@@ -21,7 +21,7 @@ export default commandModule({
   description: "host giveaways",
   plugins: [
     publishConfig({
-      defaultMemberPermissions: PermissionsBitField.Flags.Administrator,
+      defaultMemberPermissions: PermissionsBitField.Flags.ManageGuild,
       integrationTypes: ["Guild"],
       contexts: [IntegrationContextType.GUILD],
     }),
