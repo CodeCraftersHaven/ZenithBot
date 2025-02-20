@@ -28,10 +28,10 @@ export default eventModule({
     if (!isSystemEnabled) return;
     const tracker = new SiegeTracker();
     const wasPlayingSiege =
-      oldPresence?.activities.some((a) => a.name === "Spotify") ??
+      oldPresence?.activities.some((a) => a.name === "Rainbow Six Siege") ??
       false;
     const isPlayingSiege = newPresence.activities.some(
-      (a) => a.name === "Spotify",
+      (a) => a.name === "Rainbow Six Siege",
     );
 
     if (wasPlayingSiege !== isPlayingSiege) {
