@@ -43,12 +43,9 @@ export default commandModule({
           return await ctx.editReply("You can't delete this message.");
         }
         const embed = ctx.message.embeds[0];
-        const reasonFieldValue = embed.fields.find(
-          (f) => f.name === "Reason",
-        )?.value;
 
-        if (reasonFieldValue) {
-          system = reasonFieldValue.split(" ")[0].toLowerCase();
+        if (embed) {
+          system = embed.description?.split(" ")[0].toLowerCase()!;
         }
         const Systems = new sys(
           ctx.guild?.id!,
@@ -153,9 +150,7 @@ export default commandModule({
         commentModal.addComponents(firstActionRow);
         ctx.showModal(commentModal);
       },
-      default: async () => {
-        await ctx.editReply("Working");
-      },
+      default: async () => {},
     };
     type Act = keyof typeof acts;
     const result = ((await acts[act as Act]) || acts.default)();

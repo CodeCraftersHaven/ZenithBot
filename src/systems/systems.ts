@@ -60,12 +60,9 @@ export default class Systems {
 
       const infoEmbed = new EmbedBuilder()
         .setTitle("System Enabled!")
-        .addFields([
-          {
-            name: "Reason",
-            value: `${capFirstLetter(this.system)} system has been set up in this channel.`,
-          },
-        ]);
+        .setDescription(
+          `${capFirstLetter(this.system)} system has been enabled in this channel.\nPlease send me your feedback with the buttons below!`,
+        );
 
       const infoButtons = ["🛑|Delete", "😍|Like", "🤮|Dislike"].map(
         (button) => {
@@ -156,8 +153,7 @@ export default class Systems {
 
       return `Enabled ${capFirstLetter(this.system)} system in <#${this.channel.id}>`;
     } catch (error: any) {
-      return `Failed to update database or send panel(s) to <#${this.channel.id}>. Please let <@342314924804014081> know this error: 
-      ${error.message}`;
+      return `Failed to update database or send panel(s) to <#${this.channel.id}>. Error: ${error.message == "Missing Permissions" ? "I can't view that channel or send messages in that channel. Please update my roles/permissions to use that channel." : error.message}`;
     }
   }
 
