@@ -1,7 +1,6 @@
 import { capFirstLetter, logger } from "#utils";
 import { Prisma, PrismaClient } from "@prisma/client";
 import {
-  PrismaClientOptions,
   DefaultArgs,
 } from "@prisma/client/runtime/library";
 import { Service } from "@sern/handler";
@@ -64,17 +63,15 @@ export default class Systems {
           `${capFirstLetter(this.system)} system has been enabled in this channel.\nPlease send me your feedback with the buttons below!`,
         );
 
-      const infoButtons = ["🛑|Delete", "😍|Like", "🤮|Dislike"].map(
-        (button) => {
-          const [emoji, name] = button.split("|");
-          return new ButtonBuilder({
-            style: name === "Delete" ? ButtonStyle.Danger : ButtonStyle.Primary,
-            emoji,
-            label: name,
-            custom_id: `panel/${name.toLowerCase()}`,
-          });
-        },
-      );
+      const infoButtons = ["🛑|Delete", "😍|Like", "🤮|Dislike"].map((button) => {
+        const [emoji, name] = button.split("|");
+        return new ButtonBuilder({
+          style: name === "Delete" ? ButtonStyle.Danger : ButtonStyle.Primary,
+          emoji,
+          label: name,
+          custom_id: `panel/${name.toLowerCase()}`,
+        });
+      });
 
       const infoRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
         ...infoButtons,
@@ -103,14 +100,15 @@ export default class Systems {
       );
 
       const sentMessages =
-      this.system === "r6tracker" ? [] :
-        this.system === "tickets"
-          ? await this.sendMessages(
+        this.system === "siegetracker"
+          ? []
+          : this.system === "tickets"
+            ? await this.sendMessages(
               this.channel,
               [infoEmbed, infoRow],
               [embed, ticketRow],
             )
-          : await this.sendMessages(this.channel, [infoEmbed, infoRow]);
+            : await this.sendMessages(this.channel, [infoEmbed, infoRow]);
 
       const messageIds = sentMessages.map((msg) => {
         return { id: msg.id };
@@ -118,43 +116,62 @@ export default class Systems {
 
       if (systemIndex !== -1) {
         systems[systemIndex].enabled = true;
-        const channelIndex = systems[systemIndex].channels.findIndex(
-          (c) => c.id === this.channel.id,
-        );
-
-        if (channelIndex !== -1) {
-          systems[systemIndex].channels[channelIndex].messages.push(
-            ...messageIds,
+        if (this.system !== "siegetracker") {
+          const channelIndex = systems[systemIndex].channels.findIndex(
+            (c) => c.id === this.channel.id,
           );
-        } else {
-          systems[systemIndex].channels.push({
-            id: this.channel.id,
-            name: this.channel.name,
-            messages: messageIds,
-          });
-        }
-      } else {
-        systems.push({
-          name: this.system,
-          enabled: true,
-          channels: [
-            {
+
+          if (channelIndex !== -1) {
+            systems[systemIndex].channels[channelIndex].messages.push(
+              ...messageIds,
+            );
+          } else {
+            systems[systemIndex].channels.push({
               id: this.channel.id,
               name: this.channel.name,
               messages: messageIds,
+            });
+          }
+        }
+      } else {
+        systems.push(
+          this.system === "siegetracker"
+            ? {
+              name: this.system,
+              enabled: true,
+              channels: [],
+            }
+            : {
+              name: this.system,
+              enabled: true,
+              channels: [
+                {
+                  id: this.channel.id,
+                  name: this.channel.name,
+                  messages: messageIds,
+                },
+              ],
             },
-          ],
-        });
+        );
       }
 
-      await this.db.systems.update({
-        where: { id: this.guildId },
-        data: { systems: { set: systems } },
-      });
+      await this.db.systems
+        .update({
+          where: { id: this.guildId },
+          data: { systems: { set: systems } },
+        })
+        .catch(async () => {
+          await this.db.systems.create({
+            data: { id: this.guildId, systems: systems },
+          });
+        });
 
       return `Enabled ${capFirstLetter(this.system)} system in <#${this.channel.id}>`;
     } catch (error: any) {
-      return `Failed to update database or send panel(s) to <#${this.channel.id}>. Error: ${error.message == "Missing Permissions" ? "I can't view that channel or send messages in that channel. Please update my roles/permissions to use that channel." : error.message}`;
+      return `Failed to update database or send panel(s) to <#${this.channel.id}>. Error: ${error.message == "Missing Permissions"
+          ? "I can't view that channel or send messages in that channel. Please update my roles/permissions to use that channel."
+          : error.message
+        }`;
     }
   }
 
@@ -183,21 +200,23 @@ export default class Systems {
         return "This channel does not have any stored messages.";
       }
 
-      const messages =
-        systemData.systems[systemIndex].channels[channelIndex].messages;
-      if (messages.length) {
-        for (const message of messages) {
-          try {
-            const msg = await this.channel.messages.fetch(message.id);
-            if (msg) await msg.delete();
-          } catch (error: any) {
-            logger.warn(
-              `Failed to delete message ${message}: ${error.message}`,
-            );
+      if (this.system !== "siegetracker") {
+        const messages =
+          systemData.systems[systemIndex].channels[channelIndex].messages;
+        if (messages.length) {
+          for (const message of messages) {
+            try {
+              const msg = await this.channel.messages.fetch(message.id);
+              if (msg) await msg.delete();
+            } catch (error: any) {
+              logger.warn(
+                `Failed to delete message ${message}: ${error.message}`,
+              );
+            }
           }
-        }
 
-        systemData.systems[systemIndex].channels[channelIndex].messages = [];
+          systemData.systems[systemIndex].channels[channelIndex].messages = [];
+        }
       }
 
       systemData.systems[systemIndex].channels = systemData.systems[
@@ -211,10 +230,10 @@ export default class Systems {
         if (this.system in this.db) {
           const model =
             this.db[
-              this.system as keyof Omit<
-                PrismaClient,
-                "$connect" | "$disconnect" | "$on" | "$transaction" | "$use"
-              >
+            this.system as keyof Omit<
+              PrismaClient,
+              "$connect" | "$disconnect" | "$on" | "$transaction" | "$use"
+            >
             ];
           if (model && typeof model === "object" && "delete" in model) {
             await (model as Prisma.SystemsDelegate<DefaultArgs>)

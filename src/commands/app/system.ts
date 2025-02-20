@@ -32,8 +32,8 @@ export default commandModule({
           choices: [
             { name: "counting", value: "counting" },
             { name: "giveaways", value: "giveaways" },
-            { name: "r6tracker", value: "r6tracker" },
-            { name: "selfroles", value: "selfroles" },
+            { name: "siege tracker", value: "siegetracker" },
+            { name: "self roles", value: "selfroles" },
             { name: "tickets", value: "tickets" },
             { name: "welcome", value: "welcome" },
           ],

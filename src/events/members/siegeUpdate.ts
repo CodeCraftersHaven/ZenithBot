@@ -23,7 +23,7 @@ export default eventModule({
     const isSystemEnabled = await checkIfSystemEnabled(
       systems,
       guildId,
-      "r6tracker",
+      "siegetracker",
     );
     if (!isSystemEnabled) return;
     const tracker = new SiegeTracker();
