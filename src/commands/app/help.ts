@@ -34,9 +34,12 @@ export default commandModule({
     let description: string;
     const problems = {
       missingperms: async () => {
-        const ideas: string[] = ["Give me `Manage Guild` permissions or a role that includes it", "Use a channel that I can see and send messages in"];
+        const ideas: string[] = [
+          "Give me `Manage Guild` permissions or a role that includes it",
+          "Use a channel that I can see and send messages in",
+        ];
         description = `It seems like you are missing some permissions. Here are some ideas to fix this:\n${ideas.join(
-          "\n"
+          "\n",
         )}`;
         embed.setDescription(description);
         return await ctx.reply({ embeds: [embed] });
