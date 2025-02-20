@@ -50,15 +50,13 @@ export default eventModule({
     }
 
     const cmd = await getEnableCommand(c);
-    const firstChannel = guild.channels.cache
-      .filter(
-        (channel) =>
-          channel.isTextBased() &&
-          channel
-            .permissionsFor(guild.members.me!)
-            ?.has(["ViewChannel", "SendMessages"]),
-      )
-      .first() as TextChannel | undefined;
+    const firstChannel = guild.channels.cache.find(
+      (channel) =>
+        channel.isTextBased() &&
+        channel
+          .permissionsFor(guild.members.me!)
+          ?.has(["ViewChannel", "SendMessages"]),
+    ) as TextChannel | undefined;
     if (!firstChannel) return;
     const embed = {
       title: "Thanks for inviting me!",
