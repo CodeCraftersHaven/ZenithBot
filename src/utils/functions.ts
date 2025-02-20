@@ -75,7 +75,7 @@ export const capFirstLetter = (str: string): string => {
 export const getEnableCommand = async (c: Client): Promise<string> => {
   const commands = await c.application?.commands.fetch();
 
-  const cmd = commands?.find((cmd) => cmd.name === "system enable")!;
+  const cmd = commands?.find((cmd) => cmd.name === "system")!;
 
   return cmd.id;
 };
