@@ -8,7 +8,7 @@ export default eventModule({
   type: EventType.Discord,
   name: Events.PresenceUpdate,
   async execute(oldPresence, newPresence) {
-    const [client, logger, { systems }, { R6tracker }] = Services(
+    const [client, logger, { systems }, { SiegeTracker }] = Services(
       "@sern/client",
       "@sern/logger",
       "@prisma/client",
@@ -26,12 +26,12 @@ export default eventModule({
       "r6tracker",
     );
     if (!isSystemEnabled) return;
-    const tracker = new R6tracker();
+    const tracker = new SiegeTracker();
     const wasPlayingSiege =
-      oldPresence?.activities.some((a) => a.name === "Rainbow Six Siege") ??
+      oldPresence?.activities.some((a) => a.name === "Spotify") ??
       false;
     const isPlayingSiege = newPresence.activities.some(
-      (a) => a.name === "Rainbow Six Siege",
+      (a) => a.name === "Spotify",
     );
 
     if (wasPlayingSiege !== isPlayingSiege) {

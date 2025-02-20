@@ -1,6 +1,6 @@
 import { Collection } from "discord.js";
 
-export default class Tracker {
+export default class siegeTracker {
   public r6Collection: Collection<string, number>;
   public siegePlayersCount: number;
   public uniqueMembers: Set<string>;
@@ -15,4 +15,4 @@ export default class Tracker {
     this.parentChannelId = "";
   }
 }
-export type tracker = typeof Tracker;
+export type siegetracker = typeof siegeTracker;

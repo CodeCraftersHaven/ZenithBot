@@ -10,7 +10,7 @@ import {
   SelfRoles,
   Systems,
   Tickets,
-  Tracker,
+  SiegeTracker,
   Welcome,
 } from "#systems";
 
@@ -37,7 +37,7 @@ await makeDependencies(({ add, swap }) => {
     SelfRoles: SelfRoles.default,
     Systems: Systems.default,
     Tickets: Tickets.default,
-    Tracker: Tracker.default,
+    SiegeTracker: SiegeTracker.default,
     Welcome: Welcome.default,
   });
   add(

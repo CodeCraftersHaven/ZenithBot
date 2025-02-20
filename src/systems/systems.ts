@@ -103,6 +103,7 @@ export default class Systems {
       );
 
       const sentMessages =
+      this.system === "r6tracker" ? [] :
         this.system === "tickets"
           ? await this.sendMessages(
               this.channel,

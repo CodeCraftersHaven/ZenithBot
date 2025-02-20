@@ -15,7 +15,7 @@ import type {
   SelfRoles,
   Systems,
   Tickets,
-  Tracker,
+  SiegeTracker,
   Welcome,
 } from "#systems";
 /**
@@ -31,7 +31,7 @@ declare global {
     systems: {
       Counting: Counting.counting;
       Giveaway: Giveaways.giveaway;
-      R6tracker: Tracker.tracker;
+      SiegeTracker: SiegeTracker.siegetracker;
       SelfRoles: SelfRoles.selfroles;
       Systems: Systems.systems;
       Tickets: Tickets.tickets;
