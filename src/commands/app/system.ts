@@ -29,14 +29,29 @@ export default commandModule({
           name: "system",
           description: "the system to enable",
           type: ApplicationCommandOptionType.String,
-          choices: [
-            { name: "counting", value: "counting" },
-            { name: "giveaways", value: "giveaways" },
-            { name: "siege tracker", value: "siegetracker" },
-            { name: "self roles", value: "selfroles" },
-            { name: "tickets", value: "tickets" },
-            { name: "welcome", value: "welcome" },
-          ],
+          autocomplete: true,
+          command: {
+            async execute(ctx, { deps }) {
+              const [system] = [deps["@prisma/client"].systems];
+              const focusedOption = ctx.options.getFocused().toLowerCase();
+              const systemResult = await system.findFirst({
+                where: { id: ctx.guild?.id! },
+                select: { systems: true },
+              });
+              if (!systemResult) {
+                return ctx.respond([]);
+              }
+              const filter = systemResult.systems
+                .filter(
+                  (sys) => sys.name.includes(focusedOption) && !sys.enabled,
+                )
+                .map((sys) => ({
+                  name: sys.name,
+                  value: sys.name,
+                }));
+              await ctx.respond(filter);
+            },
+          },
           required: true,
         },
         {

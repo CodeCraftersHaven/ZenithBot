@@ -116,42 +116,34 @@ export default class Systems {
 
       if (systemIndex !== -1) {
         systems[systemIndex].enabled = true;
-        if (this.system !== "siegetracker") {
-          const channelIndex = systems[systemIndex].channels.findIndex(
-            (c) => c.id === this.channel.id,
-          );
+        const channelIndex = systems[systemIndex].channels.findIndex(
+          (c) => c.id === this.channel.id,
+        );
 
-          if (channelIndex !== -1) {
-            systems[systemIndex].channels[channelIndex].messages.push(
-              ...messageIds,
-            );
-          } else {
-            systems[systemIndex].channels.push({
-              id: this.channel.id,
-              name: this.channel.name,
-              messages: messageIds,
-            });
-          }
+        if (channelIndex !== -1) {
+          systems[systemIndex].channels[channelIndex].messages.push(
+            ...messageIds,
+          );
+        } else {
+          systems[systemIndex].channels.push({
+            id: this.channel.id,
+            name: this.channel.name,
+            messages: messageIds,
+          });
         }
       } else {
         systems.push(
-          this.system === "siegetracker"
-            ? {
-              name: this.system,
-              enabled: true,
-              channels: [],
-            }
-            : {
-              name: this.system,
-              enabled: true,
-              channels: [
-                {
-                  id: this.channel.id,
-                  name: this.channel.name,
-                  messages: messageIds,
-                },
-              ],
-            },
+          {
+            name: this.system,
+            enabled: true,
+            channels: [
+              {
+                id: this.channel.id,
+                name: this.channel.name,
+                messages: messageIds,
+              },
+            ],
+          },
         );
       }
 
@@ -166,11 +158,11 @@ export default class Systems {
           });
         });
 
-      return `Enabled ${capFirstLetter(this.system)} system in <#${this.channel.id}>`;
+      return `${capFirstLetter(this.system)} system has been enabled ${this.system !== "siegetracker" ? `in <#${this.channel.id}>` : ""}.`;
     } catch (error: any) {
       return `Failed to update database or send panel(s) to <#${this.channel.id}>. Error: ${error.message == "Missing Permissions"
-          ? "I can't view that channel or send messages in that channel. Please update my roles/permissions to use that channel."
-          : error.message
+        ? "I can't view that channel or send messages in that channel. Please update my roles/permissions to use that channel."
+        : error.message
         }`;
     }
   }
@@ -187,68 +179,41 @@ export default class Systems {
       }
 
       const systemIndex = systemData.systems.findIndex(
-        (s) => s.name === this.system,
+        (s) => s.name === this.system
       );
+
       if (systemIndex === -1) {
         return "System not found.";
       }
 
       const channelIndex = systemData.systems[systemIndex].channels.findIndex(
-        (c) => c.id === this.channel.id,
+        (c) => c.id === this.channel.id
       );
+
       if (channelIndex === -1) {
         return "This channel does not have any stored messages.";
       }
 
-      if (this.system !== "siegetracker") {
-        const messages =
-          systemData.systems[systemIndex].channels[channelIndex].messages;
-        if (messages.length) {
-          for (const message of messages) {
-            try {
-              const msg = await this.channel.messages.fetch(message.id);
-              if (msg) await msg.delete();
-            } catch (error: any) {
-              logger.warn(
-                `Failed to delete message ${message}: ${error.message}`,
-              );
-            }
-          }
+      const messages =
+        systemData.systems[systemIndex].channels[channelIndex].messages;
 
-          systemData.systems[systemIndex].channels[channelIndex].messages = [];
-        }
-      }
-
-      systemData.systems[systemIndex].channels = systemData.systems[
-        systemIndex
-      ].channels.filter((c) => c.id !== this.channel.id);
-
-      let deletedSystem = false;
-      if (!systemData.systems[systemIndex].channels.length) {
-        systemData.systems.splice(systemIndex, 1);
-
-        if (this.system in this.db) {
-          const model =
-            this.db[
-            this.system as keyof Omit<
-              PrismaClient,
-              "$connect" | "$disconnect" | "$on" | "$transaction" | "$use"
-            >
-            ];
-          if (model && typeof model === "object" && "delete" in model) {
-            await (model as Prisma.SystemsDelegate<DefaultArgs>)
-              .delete({
-                where: { id: this.guildId },
-              })
-              .catch((err: any) => {
-                logger.warn(
-                  `Failed to delete system '${this.system}': ${err.message}`,
-                );
-              });
-            deletedSystem = true;
+      if (messages.length) {
+        for (const message of messages) {
+          try {
+            const msg = await this.channel.messages.fetch(message.id);
+            if (msg) await msg.delete();
+          } catch (error: any) {
+            logger.warn(`Failed to delete message ${message}: ${error.message}`);
           }
         }
+
+        systemData.systems[systemIndex].channels[channelIndex].messages = [];
       }
+
+
+      systemData.systems[systemIndex].channels = [];
+
+      systemData.systems[systemIndex].enabled = false;
 
       await this.db.systems.update({
         where: { id: this.guildId },
@@ -257,7 +222,7 @@ export default class Systems {
 
       const confirmationEmbed = new EmbedBuilder()
         .setDescription(
-          `✅ Successfully deleted the panel ${capFirstLetter(this.system)}.`,
+          `✅ Successfully disabled the panel ${capFirstLetter(this.system)}.`
         )
         .setColor("Green");
 
@@ -266,21 +231,18 @@ export default class Systems {
       });
 
       setTimeout(() => {
-        confirmationMessage
-          .delete()
-          .catch((err) =>
-            logger.warn(
-              `Failed to delete confirmation message: ${err.message}`,
-            ),
-          );
+        confirmationMessage.delete().catch(() => {
+          return "System has been disabled.";
+        });
       }, 60000);
 
-      return `Deleted panel messages in <#${this.channel.id}>.`;
+      return `Disabled panel in <#${this.channel.id}>.`;
     } catch (error: any) {
       console.error(error);
-      return `Failed to delete panel messages. Error: ${error.message}`;
+      return `Failed to disable panel. Error: ${error.message}`;
     }
   }
+
   async sendMessages(
     channel: TextChannel,
     ...pairs: [
