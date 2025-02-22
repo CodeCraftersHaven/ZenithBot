@@ -52,7 +52,12 @@ export default commandModule({
           system,
           ctx.channel as TextChannel,
         );
-        const remove = await Systems.clearPanel();
+        const remove = await Systems.removeChannel();
+        if (remove === "This channel is not added to this system.") {
+          await ctx.message.delete();
+          return await ctx.editReply(`This panel was already deleted, so I've deleted the message for you.`);
+        }
+        
         return await ctx.editReply(remove);
       },
       like: async () => {

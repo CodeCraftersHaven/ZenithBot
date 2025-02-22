@@ -100,6 +100,114 @@ export default commandModule({
         },
       ],
     },
+    {
+      name: "addchannel",
+      description: "add a channel to a system",
+      type: ApplicationCommandOptionType.Subcommand,
+      options: [
+        {
+          name: "system",
+          description: "the system to add a channel to",
+          type: ApplicationCommandOptionType.String,
+          autocomplete: true,
+          command: {
+            async execute(ctx, { deps }) {
+              const [system] = [deps["@prisma/client"].systems];
+              const focusedOption = ctx.options.getFocused().toLowerCase();
+              const systemResult = await system.findFirst({
+                where: { id: ctx.guild?.id! },
+                select: { systems: true },
+              });
+              if (!systemResult) {
+                return ctx.respond([]);
+              }
+              const filter = systemResult.systems
+                .filter(
+                  (sys) => sys.name.includes(focusedOption) && sys.enabled,
+                )
+                .map((sys) => ({
+                  name: sys.name,
+                  value: sys.name,
+                }));
+              await ctx.respond(filter);
+            },
+          },
+          required: true,
+        },
+        {
+          name: "channel",
+          description: "the channel to add",
+          type: ApplicationCommandOptionType.Channel,
+          channel_types: [ChannelType.GuildText],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "removechannel",
+      description: "remove a channel from a system",
+      type: ApplicationCommandOptionType.Subcommand,
+      options: [
+        {
+          name: "system",
+          description: "the system to remove a channel from",
+          type: ApplicationCommandOptionType.String,
+          autocomplete: true,
+          command: {
+            async execute(ctx, { deps }) {
+              const [system] = [deps["@prisma/client"].systems];
+              const focusedOption = ctx.options.getFocused().toLowerCase();
+              const systemResult = await system.findFirst({
+                where: { id: ctx.guild?.id!, systems: { some: { enabled: true } } },
+              });
+              if (!systemResult) {
+                return ctx.respond([]);
+              }
+              const filter = systemResult.systems
+                .filter(
+                  (sys) => sys.name.includes(focusedOption) && sys.enabled,
+                )
+                .map((sys) => ({
+                  name: sys.name,
+                  value: sys.name,
+                }));
+              await ctx.respond(filter);
+            }
+          },
+          required: true,
+        },
+        {
+          name: "channel",
+          description: "the channel to remove",
+          type: ApplicationCommandOptionType.String,
+          autocomplete: true,
+          command: {
+            async execute(ctx, { deps }) {
+              const [system] = [deps["@prisma/client"].systems];
+              const focusedOption = ctx.options.getFocused().toLowerCase();
+              const systemResult = await system.findFirst({
+                where: { id: ctx.guild?.id! },
+              });
+              if (!systemResult) {
+                return ctx.respond([]);
+              }
+              systemResult.systems
+                .filter(
+                  (sys) => sys.name.includes(focusedOption) && sys.enabled,
+                ).forEach(async (sys) => {
+                  const f = sys.channels.map((channel) => ({
+                    name: channel.name,
+                    value: channel.id,
+                  }));
+                  await ctx.respond(f);
+                })
+
+            }
+          },
+          required: true,
+        },
+      ],
+    }
   ],
   async execute(ctx, { deps }) {
     const { guildId } = ctx;
@@ -143,6 +251,20 @@ export default commandModule({
           );
         }
         const res = await Systems.clearPanel();
+        return await ctx.reply(res);
+      },
+      addchannel: async () => {
+        const system = ctx.options.getString("system", true);
+        const channel = ctx.options.getChannel("channel", true) as TextChannel;
+        const Systems = new sys(guildId!, system, channel);
+        const res = await Systems.addChannel();
+        return await ctx.reply(res);
+      },
+      removechannel: async () => {
+        const system = ctx.options.getString("system", true);
+        const channel = ctx.client.channels.cache.get(ctx.options.getString("channel", true)) as TextChannel;
+        const Systems = new sys(guildId!, system, channel);
+        const res = await Systems.removeChannel();
         return await ctx.reply(res);
       },
       default: async () => {
