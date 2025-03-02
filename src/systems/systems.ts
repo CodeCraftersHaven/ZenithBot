@@ -1,8 +1,5 @@
 import { capFirstLetter, logger } from "#utils";
-import { Prisma, PrismaClient } from "@prisma/client";
-import {
-  DefaultArgs,
-} from "@prisma/client/runtime/library";
+import { PrismaClient } from "@prisma/client";
 import { Service } from "@sern/handler";
 import {
   ActionRowBuilder,
@@ -81,19 +78,17 @@ export default class Systems {
           });
         }
       } else {
-        systems.push(
-          {
-            name: this.system,
-            enabled: true,
-            channels: [
-              {
-                id: this.channel.id,
-                name: this.channel.name,
-                messages: messageIds,
-              },
-            ],
-          },
-        );
+        systems.push({
+          name: this.system,
+          enabled: true,
+          channels: [
+            {
+              id: this.channel.id,
+              name: this.channel.name,
+              messages: messageIds,
+            },
+          ],
+        });
       }
 
       await this.db.systems
@@ -109,10 +104,11 @@ export default class Systems {
 
       return `${capFirstLetter(this.system)} system has been enabled ${this.system !== "siegetracker" ? `in <#${this.channel.id}>` : ""}.`;
     } catch (error: any) {
-      return `Failed to update database or send panel(s) to <#${this.channel.id}>. Error: ${error.message == "Missing Permissions"
-        ? "I can't view that channel or send messages in that channel. Please update my roles/permissions to use that channel."
-        : error.message
-        }`;
+      return `Failed to update database or send panel(s) to <#${this.channel.id}>. Error: ${
+        error.message == "Missing Permissions"
+          ? "I can't view that channel or send messages in that channel. Please update my roles/permissions to use that channel."
+          : error.message
+      }`;
     }
   }
 
@@ -128,7 +124,7 @@ export default class Systems {
       }
 
       const systemIndex = systemData.systems.findIndex(
-        (s) => s.name === this.system
+        (s) => s.name === this.system,
       );
 
       if (systemIndex === -1) {
@@ -136,7 +132,7 @@ export default class Systems {
       }
 
       const channelIndex = systemData.systems[systemIndex].channels.findIndex(
-        (c) => c.id === this.channel.id
+        (c) => c.id === this.channel.id,
       );
 
       if (channelIndex === -1) {
@@ -152,17 +148,17 @@ export default class Systems {
             const msg = await this.channel.messages.fetch(message.id);
             if (msg) await msg.delete();
           } catch (error: any) {
-            logger.warn(`Failed to delete message ${message}: ${error.message}`);
+            logger.warn(
+              `Failed to delete message ${message}: ${error.message}`,
+            );
           }
         }
 
         systemData.systems[systemIndex].channels[channelIndex].messages = [];
       }
 
-
-      systemData.systems[systemIndex].channels = [];
-
       systemData.systems[systemIndex].enabled = false;
+      systemData.systems[systemIndex].channels = [];
 
       await this.db.systems.update({
         where: { id: this.guildId },
@@ -171,7 +167,7 @@ export default class Systems {
 
       const confirmationEmbed = new EmbedBuilder()
         .setDescription(
-          `✅ Successfully disabled the panel ${capFirstLetter(this.system)}.`
+          `✅ Successfully disabled the panel ${capFirstLetter(this.system)}.`,
         )
         .setColor("Green");
 
@@ -195,19 +191,22 @@ export default class Systems {
   async addChannel(): Promise<string> {
     try {
       const existingData = await this.db.systems.findUnique({
-        where: { id: this.guildId, systems: { some: { enabled: true, name: this.system } } },
+        where: {
+          id: this.guildId,
+          systems: { some: { enabled: true, name: this.system } },
+        },
       });
       if (!existingData) {
         return "This system is not enabled in this guild.";
       }
       const systemIndex = existingData.systems.findIndex(
-        (s) => s.name === this.system
+        (s) => s.name === this.system,
       );
       if (systemIndex === -1) {
         return "System not found.";
       }
       const channelIndex = existingData.systems[systemIndex].channels.findIndex(
-        (c) => c.id === this.channel.id
+        (c) => c.id === this.channel.id,
       );
       if (channelIndex !== -1) {
         return "This channel is already added to this system.";
@@ -237,19 +236,22 @@ export default class Systems {
   async removeChannel(): Promise<string> {
     try {
       const existingData = await this.db.systems.findUnique({
-        where: { id: this.guildId, systems: { some: { enabled: true, name: this.system } } },
+        where: {
+          id: this.guildId,
+          systems: { some: { enabled: true, name: this.system } },
+        },
       });
       if (!existingData) {
         return "This system is not enabled in this guild.";
       }
       const systemIndex = existingData.systems.findIndex(
-        (s) => s.name === this.system
+        (s) => s.name === this.system,
       );
       if (systemIndex === -1) {
         return "System not found.";
       }
       const channelIndex = existingData.systems[systemIndex].channels.findIndex(
-        (c) => c.id === this.channel.id
+        (c) => c.id === this.channel.id,
       );
       if (channelIndex === -1) {
         return "This channel is not added to this system.";
@@ -262,18 +264,23 @@ export default class Systems {
             const msg = await this.channel.messages.fetch(message.id);
             if (msg) await msg.delete();
           } catch (error: any) {
-            logger.warn(`Failed to delete message ${message}: ${error.message}`);
+            logger.warn(
+              `Failed to delete message ${message}: ${error.message}`,
+            );
           }
         }
       }
       existingData.systems[systemIndex].channels.splice(channelIndex, 1);
+      if (existingData.systems[systemIndex].channels.length === 0) {
+        existingData.systems[systemIndex].enabled = false
+      }
       await this.db.systems.update({
         where: { id: this.guildId },
         data: { systems: { set: existingData.systems } },
       });
       const confirmationEmbed = new EmbedBuilder()
         .setDescription(
-          `✅ Successfully disabled the panel ${capFirstLetter(this.system)}.`
+          `✅ Successfully disabled the panel ${capFirstLetter(this.system)}.`,
         )
         .setColor("Green");
 
@@ -340,10 +347,10 @@ export default class Systems {
         ? []
         : ticket
           ? await this.sendMessages(
-            this.channel,
-            [infoEmbed, infoRow],
-            [ticketEmbed, ticketRow],
-          )
+              this.channel,
+              [infoEmbed, infoRow],
+              [ticketEmbed, ticketRow],
+            )
           : await this.sendMessages(this.channel, [infoEmbed, infoRow]);
 
     const messageIds = sentMessages.map((msg) => {
