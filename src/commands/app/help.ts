@@ -36,9 +36,11 @@ export default commandModule({
       missingperms: async () => {
         const ideas: string[] = [
           "Give me `Manage Guild` permissions or a role that includes it",
+          "Ensure that you also have `Manage Guild` permissions",
           "Use a channel that I can see and send messages in",
+          "Ensure that you have permissions to see and send messages in the channel",
         ];
-        description = `It seems like you are missing some permissions. Here are some ideas to fix this:\n${ideas.join(
+        description = `One of us are missing permissions in this server. Here are some ideas to fix this:\n${ideas.join(
           "\n",
         )}`;
         embed.setDescription(description);
