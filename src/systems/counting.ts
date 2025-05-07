@@ -5,7 +5,7 @@ import { Service } from "@sern/handler";
 export default class Counting {
   private message: Message;
   private prisma: PrismaClient;
-  private static cooldowns: Map<string, number> = new Map();
+  private cooldowns: Map<string, number> = new Map();
 
   constructor(message: Message) {
     this.message = message;
@@ -32,8 +32,8 @@ export default class Counting {
 
     if (!system) return;
     const userId = this.message.author.id;
-    if (Counting.isUserOnCooldown(userId)) {
-      const cooldownEnd = Counting.cooldowns.get(userId)!;
+    if (this.isUserOnCooldown(userId)) {
+      const cooldownEnd = this.cooldowns.get(userId)!;
       const remainingTime = Math.ceil((cooldownEnd - Date.now()) / 1000);
       await this.message.delete().catch(() => null);
       const denyMessage = await (this.message.channel as TextChannel).send(
@@ -128,12 +128,12 @@ export default class Counting {
 
   private applyCooldown(userId: string) {
     const cooldownTime = 60000;
-    Counting.cooldowns.set(userId, Date.now() + cooldownTime);
-    setTimeout(() => Counting.cooldowns.delete(userId), cooldownTime);
+    this.cooldowns.set(userId, Date.now() + cooldownTime);
+    setTimeout(() => this.cooldowns.delete(userId), cooldownTime);
   }
 
-  public static isUserOnCooldown(userId: string): boolean {
-    const cooldownEnd = Counting.cooldowns.get(userId);
+  public isUserOnCooldown(userId: string): boolean {
+    const cooldownEnd = this.cooldowns.get(userId);
     return cooldownEnd !== undefined && cooldownEnd > Date.now();
   }
 }
