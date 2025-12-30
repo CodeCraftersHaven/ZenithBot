@@ -33,5 +33,13 @@ export default eventModule({
 
       channel.send({ embeds: [embed], files: [image] });
     }
+
+    if (member.guild.id === "1370166656596185188") {
+      const newRoleID = "1370167945216393268";
+      const newRole = member.guild.roles.cache.get(newRoleID);
+      if (newRole) {
+        await member.roles.add(newRole);
+      }
+    }
   },
 });
