@@ -39,6 +39,7 @@ export default eventModule({
       const newRole = member.guild.roles.cache.get(newRoleID);
       if (newRole) {
         await member.roles.add(newRole);
+        console.log("role added")
       }
     }
   },
