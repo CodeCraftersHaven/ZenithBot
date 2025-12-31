@@ -8,3 +8,4 @@ response.log
 runtime.logs
 *.lock
 package-lock.json
+assets/private/*.json
