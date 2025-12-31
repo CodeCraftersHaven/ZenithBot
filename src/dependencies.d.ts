@@ -10,6 +10,7 @@ import type { Publisher } from "@sern/publisher";
 import type { Logger } from "winston";
 import type { PrismaClient } from "@prisma/client";
 import type {
+  AutoRole,
   Counting,
   Giveaways,
   SelfRoles,
@@ -28,6 +29,7 @@ declare global {
     "@sern/logger": Logger;
     "@prisma/client": PrismaClient;
     systems: {
+      AutoRole: AutoRole.autoRole;
       Counting: Counting.counting;
       Giveaway: Giveaways.giveaway;
       SelfRoles: SelfRoles.selfroles;
@@ -37,7 +39,6 @@ declare global {
     };
     process: NodeJS.Process;
   }
-  type Platform = "uplay" | "psn" | "xbl" | "steam" | "epic" | "amazon";
 }
 
 export {};

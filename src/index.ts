@@ -5,6 +5,7 @@ import { Sern, makeDependencies } from "@sern/handler";
 import { Publisher } from "@sern/publisher";
 import { logger, prisma } from "#utils";
 import {
+  AutoRole,
   Counting,
   Giveaways,
   SelfRoles,
@@ -31,6 +32,7 @@ await makeDependencies(({ add, swap }) => {
   add("@prisma/client", prisma);
   swap("@sern/logger", logger);
   add("systems", {
+    AutoRole: AutoRole.default,
     Counting: Counting.default,
     Giveaway: Giveaways.default,
     SelfRoles: SelfRoles.default,

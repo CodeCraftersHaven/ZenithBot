@@ -130,3 +130,12 @@ model Counting {
 }
 
 //-------------------------------
+//------AUTOROLE SYSTEM----------
+//-------------------------------
+
+model Autorole {
+  id     String @id @map("_id")
+  roleId String
+}
+
+//-------------------------------

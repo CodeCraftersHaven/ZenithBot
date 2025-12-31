@@ -54,7 +54,7 @@ export default class Systems {
         return "This system is already enabled in this channel.";
       }
 
-      const sentMessages = await this.formPanelEmbed(this.system === "tickets");
+      const sentMessages = await this.formPanelEmbed();
 
       const messageIds = sentMessages.map((msg) => {
         return { id: msg.id };
@@ -102,7 +102,7 @@ export default class Systems {
           });
         });
 
-      return `${capFirstLetter(this.system)} system has been enabled in <#${this.channel.id}>`;
+      return `${capFirstLetter(this.system)} system has been enabled in <#${this.channel.id}>. Please update channel permissions if needed.`;
     } catch (error: any) {
       return `Failed to update database or send panel(s) to <#${this.channel.id}>. Error: ${
         error.message == "Missing Permissions"
@@ -212,7 +212,7 @@ export default class Systems {
         return "This channel is already added to this system.";
       }
 
-      const sentMessages = await this.formPanelEmbed(this.system === "tickets");
+      const sentMessages = await this.formPanelEmbed();
 
       const messageIds = sentMessages.map((msg) => {
         return { id: msg.id };
@@ -300,7 +300,7 @@ export default class Systems {
     }
   }
 
-  private async formPanelEmbed(ticket: boolean = false) {
+  private async formPanelEmbed() {
     const infoEmbed = new EmbedBuilder()
       .setTitle("System Enabled!")
       .setDescription(
@@ -326,29 +326,57 @@ export default class Systems {
       .setDescription("Click 📩 to open a ticket")
       .setColor("Random");
 
-    const openTicket = new ButtonBuilder()
-      .setCustomId("tickets/open")
-      .setLabel("Open Ticket")
-      .setStyle(ButtonStyle.Primary)
-      .setEmoji("📩");
-
-    const checkTicket = new ButtonBuilder()
-      .setCustomId("tickets/check")
-      .setLabel("Check Ticket")
-      .setStyle(ButtonStyle.Primary)
-      .setEmoji("✅");
+    const ticketButtons = ["📩|Open", "✅|Check"].map((button) => {
+      const [emoji, name] = button.split("|");
+      return new ButtonBuilder({
+        style: name === "Open" ? ButtonStyle.Primary : ButtonStyle.Success,
+        emoji,
+        label: name,
+        custom_id: `tickets/${name.toLowerCase()}`,
+      });
+    });
 
     const ticketRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      openTicket,
-      checkTicket,
+      ...ticketButtons,
     );
-    const sentMessages = ticket
-      ? await this.sendMessages(
-          this.channel,
-          [infoEmbed, infoRow],
-          [ticketEmbed, ticketRow],
-        )
-      : await this.sendMessages(this.channel, [infoEmbed, infoRow]);
+
+    const autoroleEmbed = new EmbedBuilder()
+      .setTitle("Auto Role")
+      .setDescription("Click ⚙️ to set or update the auto role")
+      .setColor("Random");
+
+    const autoroleButtons = ["⚙️|Update"].map((button) => {
+      const [emoji, name] = button.split("|");
+      return new ButtonBuilder({
+        style: ButtonStyle.Primary,
+        emoji,
+        label: name,
+        custom_id: `autorole/${name.toLowerCase()}`,
+      });
+    });
+
+    const autoroleRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      ...autoroleButtons,
+    );
+
+    const INFO: [
+        EmbedBuilder,
+        ActionRowBuilder<MessageActionRowComponentBuilder>,
+      ] = [infoEmbed, infoRow],
+      TICKET: [
+        EmbedBuilder,
+        ActionRowBuilder<MessageActionRowComponentBuilder>,
+      ] = [ticketEmbed, ticketRow],
+      AUTOROLE: [
+        EmbedBuilder,
+        ActionRowBuilder<MessageActionRowComponentBuilder>,
+      ] = [autoroleEmbed, autoroleRow];
+
+    const sentMessages = this.system === "tickets"
+      ? await this.sendMessages(this.channel, INFO, TICKET)
+      : this.system === "autorole"
+        ? await this.sendMessages(this.channel, INFO, AUTOROLE)
+        : await this.sendMessages(this.channel, INFO);
 
     const messageIds = sentMessages.map((msg) => {
       return { id: msg.id };

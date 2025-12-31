@@ -5,9 +5,12 @@ export default eventModule({
   type: EventType.Discord,
   name: Events.GuildMemberAdd,
   execute: async (member) => {
-    const [{ Welcome }, prisma] = Services("systems", "@prisma/client");
+    const [{ Welcome, AutoRole }, prisma] = Services(
+      "systems",
+      "@prisma/client",
+    );
 
-    const system = await prisma.systems.findFirst({
+    const welcome_system = await prisma.systems.findFirst({
       where: {
         id: member.guild.id,
         systems: {
@@ -17,9 +20,9 @@ export default eventModule({
       select: { systems: { select: { channels: { select: { id: true } } } } },
     });
 
-    if (!system) return;
+    if (!welcome_system) return;
 
-    for (const { id } of system.systems.flatMap((s) => s.channels)) {
+    for (const { id } of welcome_system.systems.flatMap((s) => s.channels)) {
       const channel = member.guild.channels.cache.get(id) as TextChannel;
       if (!channel) continue;
 
@@ -34,13 +37,18 @@ export default eventModule({
       channel.send({ embeds: [embed], files: [image] });
     }
 
-    if (member.guild.id === "1370166656596185188") {
-      const newRoleID = "1370167945216393268";
-      const newRole = member.guild.roles.cache.get(newRoleID);
-      if (newRole) {
-        await member.roles.add(newRole);
-        console.log("role added");
-      }
-    }
+    const autorole_system = await prisma.systems.findFirst({
+      where: {
+        id: member.guild.id,
+        systems: {
+          some: { name: "autorole", enabled: true },
+        },
+      },
+    });
+
+    if (!autorole_system) return;
+
+    await new AutoRole(true).giveRole(member);
+
   },
 });
