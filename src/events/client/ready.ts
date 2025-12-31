@@ -1,5 +1,6 @@
 import { eventModule, EventType, Services } from "@sern/handler";
 import { Events, TextChannel } from "discord.js";
+import { syncDatabase } from "#utils";
 
 export default eventModule({
   type: EventType.Discord,
@@ -15,6 +16,8 @@ export default eventModule({
     logger.info("Client Logged In. ");
 
     await prisma.$connect();
+
+    await syncDatabase(logger, prisma, c);
 
     const db = await prisma.giveaway.findMany();
     if (!db || !db.length || db.length < 1) return;

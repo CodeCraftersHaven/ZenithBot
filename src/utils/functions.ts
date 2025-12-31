@@ -3,6 +3,9 @@ import * as path from "path";
 import * as fs from "fs/promises";
 import { PrismaClient, Prisma } from "@prisma/client";
 import { DefaultArgs } from "@prisma/client/runtime/library";
+import { fileURLToPath } from "url";
+import * as nodefs from "fs";
+import { Logger } from "winston";
 
 export type AssetEncoding =
   | "attachment"
@@ -92,4 +95,86 @@ export const checkIfSystemEnabled = async (
     },
   });
   return enabled;
+};
+
+export const syncDatabase = async (
+  logger: Logger,
+  prisma: PrismaClient,
+  c: Client,
+) => {
+  logger.info("Syncing database documents...");
+  const guilds = await c.guilds.fetch();
+  const systemsFolder = path.join(
+    path.dirname(fileURLToPath(import.meta.url)),
+    "..",
+    "systems",
+  );
+
+  const systemFiles = nodefs.readdirSync(systemsFolder);
+  const systems = systemFiles.map(async (file: string) => {
+    const systemPath = path.join(systemsFolder, file);
+    const systemModule = await import(systemPath);
+
+    const systemName =
+      systemModule.default?.name || path.basename(file, path.extname(file));
+    return systemName as string;
+  });
+  const systemsList = await Promise.all(systems);
+  const filteredSystems = systemsList.filter(
+    (f) => f != "index" && f != "Systems",
+  );
+
+  for (const g of guilds.values()) {
+    const guild = await g.fetch();
+    const dbGuild = await prisma.systems.findUnique({
+      where: { id: guild.id },
+    });
+    const fileSystemNames = filteredSystems.map((s) => s.toLowerCase());
+
+    if (!dbGuild) {
+      let systemsData = fileSystemNames.map((s) => ({
+        name: s,
+        enabled: false,
+        channels: [],
+      }));
+      await prisma.systems.create({
+        data: {
+          id: guild.id,
+          systems: systemsData,
+        },
+      });
+    } else {
+      const dbSystemNames = dbGuild.systems.map((s) => s.name);
+
+      const systemsToAdd = fileSystemNames.filter(
+        (sName) => !dbSystemNames.includes(sName),
+      );
+      const systemsToRemove = dbSystemNames.filter(
+        (sName) => !fileSystemNames.includes(sName),
+      );
+
+      if (systemsToAdd.length > 0 || systemsToRemove.length > 0) {
+        let updatedSystems = dbGuild.systems.filter(
+          (s) => !systemsToRemove.includes(s.name),
+        );
+
+        const newSystemsData = systemsToAdd.map((name) => ({
+          name,
+          enabled: false,
+          channels: [],
+        }));
+        updatedSystems.push(...newSystemsData);
+
+        await prisma.systems.update({
+          where: { id: guild.id },
+          data: {
+            systems: {
+              set: updatedSystems,
+            },
+          },
+        });
+      }
+    }
+  }
+  logger.info(`Synced systems for ${guilds.size} guild${guilds.size === 1 ? "" : "s"}.`);
 };
