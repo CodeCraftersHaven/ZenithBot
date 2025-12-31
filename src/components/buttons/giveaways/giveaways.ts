@@ -9,8 +9,6 @@ import {
   Message,
   Embed,
   APIEmbedField,
-  User,
-  Collection,
   EmbedBuilder,
 } from "discord.js";
 
