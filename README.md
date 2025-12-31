@@ -35,7 +35,6 @@ Please have Node.js, a bot from Discord Developers Page, and [optionally] Docker
    ```
 
 3. Setup env vars:<br>
-
    - Rename `.env.example` to `.env`<br>
    - Fill out all variables<br>
    - DATABASE_URL currently only supports mongodb
