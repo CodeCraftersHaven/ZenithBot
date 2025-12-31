@@ -15,7 +15,6 @@ import type {
   SelfRoles,
   Systems,
   Tickets,
-  SiegeTracker,
   Welcome,
 } from "#systems";
 /**
@@ -31,7 +30,6 @@ declare global {
     systems: {
       Counting: Counting.counting;
       Giveaway: Giveaways.giveaway;
-      SiegeTracker: SiegeTracker.siegetracker;
       SelfRoles: SelfRoles.selfroles;
       Systems: Systems.systems;
       Tickets: Tickets.tickets;
@@ -39,6 +37,7 @@ declare global {
     };
     process: NodeJS.Process;
   }
+  type Platform = "uplay" | "psn" | "xbl" | "steam" | "epic" | "amazon";
 }
 
 export {};

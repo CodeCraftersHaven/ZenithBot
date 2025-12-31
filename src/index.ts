@@ -1,4 +1,4 @@
-import "dotenv/config";
+import "dotenv/config.js";
 import * as config from "./config.js";
 import { Client, GatewayIntentBits } from "discord.js";
 import { Sern, makeDependencies } from "@sern/handler";
@@ -10,7 +10,6 @@ import {
   SelfRoles,
   Systems,
   Tickets,
-  SiegeTracker,
   Welcome,
 } from "#systems";
 
@@ -37,7 +36,6 @@ await makeDependencies(({ add, swap }) => {
     SelfRoles: SelfRoles.default,
     Systems: Systems.default,
     Tickets: Tickets.default,
-    SiegeTracker: SiegeTracker.default,
     Welcome: Welcome.default,
   });
   add(

@@ -102,13 +102,12 @@ export default class Systems {
           });
         });
 
-      return `${capFirstLetter(this.system)} system has been enabled ${this.system !== "siegetracker" ? `in <#${this.channel.id}>` : ""}.`;
+      return `${capFirstLetter(this.system)} system has been enabled in <#${this.channel.id}>`;
     } catch (error: any) {
-      return `Failed to update database or send panel(s) to <#${this.channel.id}>. Error: ${
-        error.message == "Missing Permissions"
+      return `Failed to update database or send panel(s) to <#${this.channel.id}>. Error: ${error.message == "Missing Permissions"
           ? "I can't view that channel or send messages in that channel. Please update my roles/permissions to use that channel."
           : error.message
-      }`;
+        }`;
     }
   }
 
@@ -272,7 +271,7 @@ export default class Systems {
       }
       existingData.systems[systemIndex].channels.splice(channelIndex, 1);
       if (existingData.systems[systemIndex].channels.length === 0) {
-        existingData.systems[systemIndex].enabled = false
+        existingData.systems[systemIndex].enabled = false;
       }
       await this.db.systems.update({
         where: { id: this.guildId },
@@ -343,15 +342,13 @@ export default class Systems {
       checkTicket,
     );
     const sentMessages =
-      this.system === "siegetracker"
-        ? []
-        : ticket
-          ? await this.sendMessages(
-              this.channel,
-              [infoEmbed, infoRow],
-              [ticketEmbed, ticketRow],
-            )
-          : await this.sendMessages(this.channel, [infoEmbed, infoRow]);
+      ticket
+        ? await this.sendMessages(
+          this.channel,
+          [infoEmbed, infoRow],
+          [ticketEmbed, ticketRow],
+        )
+        : await this.sendMessages(this.channel, [infoEmbed, infoRow]);
 
     const messageIds = sentMessages.map((msg) => {
       return { id: msg.id };
