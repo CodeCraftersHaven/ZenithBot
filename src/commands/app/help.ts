@@ -12,7 +12,6 @@ export default commandModule({
       choices: [
         { name: "Missing Permissions", value: "missingperms" },
         { name: "Set up the bot", value: "setup" },
-        { name: "To Enable Siege Tracker", value: "siegetracker" },
         // { name: "", value: "" },
         // { name: "", value: "" },
         // { name: "", value: "" },
@@ -47,12 +46,7 @@ export default commandModule({
         return await ctx.reply({ embeds: [embed] });
       },
       setup: async () => {
-        description = `To set up the bot, you need to do the following:\n1. Invite the bot to your server\n2. Give the bot \`Manage Server\` permissions or a role that includes it\n3. Use the </system enable:${await getEnableCommand(ctx.client)}> command to set up the bot\n4. Enjoy!`;
-        embed.setDescription(description);
-        return await ctx.reply({ embeds: [embed] });
-      },
-      siegetracker: async () => {
-        description = `To enable the siege tracker, you need to do the following:\n1. Check the /help setup command\n2. Pick any channel that's not being used by other systems (this won't actually be used by the system)\n3. Start playing siege and enjoy!`;
+        description = `To set up the bot, you need to do the following:\n1. Invite the bot to your server\n2. Give the bot \`Manage Server\` permissions or a role that includes it\n3. Move my highest role above the AutoRole role and all self roles.\n4. Use the </system enable:${await getEnableCommand(ctx.client)}> command to set up the bot\n4. Enjoy!`;
         embed.setDescription(description);
         return await ctx.reply({ embeds: [embed] });
       },
