@@ -197,7 +197,7 @@ export default class Systems {
 
   async addChannel(): Promise<string> {
     try {
-      const existingData = await this.db.systems.findUnique({
+      const existingData = await this.db.systems.findFirst({
         where: {
           id: this.guildId,
           systems: { some: { enabled: true, name: this.system } },
@@ -242,7 +242,7 @@ export default class Systems {
 
   async removeChannel(): Promise<string> {
     try {
-      const existingData = await this.db.systems.findUnique({
+      const existingData = await this.db.systems.findFirst({
         where: {
           id: this.guildId,
           systems: { some: { enabled: true, name: this.system } },
@@ -272,18 +272,19 @@ export default class Systems {
             if (msg) await msg.delete();
           } catch (error: any) {
             logger.warn(
-              `Failed to delete message ${message}: ${error.message}`,
+              `Failed to delete message ${message.id}: ${error.message}`,
             );
           }
         }
       }
-      existingData.systems[systemIndex].channels.splice(channelIndex, 1);
-      if (existingData.systems[systemIndex].channels.length === 0) {
-        existingData.systems[systemIndex].enabled = false;
+      const systems = JSON.parse(JSON.stringify(existingData.systems));
+      systems[systemIndex].channels.splice(channelIndex, 1);
+      if (systems[systemIndex].channels.length === 0) {
+        systems[systemIndex].enabled = false;
       }
       await this.db.systems.update({
         where: { id: this.guildId },
-        data: { systems: { set: existingData.systems } },
+        data: { systems: { set: systems } },
       });
       const confirmationEmbed = new EmbedBuilder()
         .setDescription(
@@ -352,10 +353,10 @@ export default class Systems {
       .setDescription("Click ⚙️ to set or update the auto role")
       .setColor("Random");
 
-    const autoroleButtons = ["⚙️|Update"].map((button) => {
+    const autoroleButtons = ["⚙️|Update", "✅|Check"].map((button) => {
       const [emoji, name] = button.split("|");
       return new ButtonBuilder({
-        style: ButtonStyle.Primary,
+        style: name === "Update" ? ButtonStyle.Primary : ButtonStyle.Success,
         emoji,
         label: name,
         custom_id: `autorole/${name.toLowerCase()}`,
