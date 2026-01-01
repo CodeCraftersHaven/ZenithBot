@@ -29,7 +29,7 @@ export default class AutoRole {
 
   public async giveRole(member: GuildMember) {
     if (!this.enabled) return;
-    if (member.user.bot) return; 
+    if (member.user.bot) return;
     const roleId = await this.getRole(member.guild.id);
     if (!roleId) return;
     await member.roles.add(roleId);

@@ -176,5 +176,7 @@ export const syncDatabase = async (
       }
     }
   }
-  logger.info(`Synced systems for ${guilds.size} guild${guilds.size === 1 ? "" : "s"}.`);
+  logger.info(
+    `Synced systems for ${guilds.size} guild${guilds.size === 1 ? "" : "s"}.`,
+  );
 };

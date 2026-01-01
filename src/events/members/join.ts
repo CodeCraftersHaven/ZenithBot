@@ -49,6 +49,5 @@ export default eventModule({
     if (!autorole_system) return;
 
     await new AutoRole(true).giveRole(member);
-
   },
 });

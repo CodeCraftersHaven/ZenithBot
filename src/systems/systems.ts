@@ -372,11 +372,12 @@ export default class Systems {
         ActionRowBuilder<MessageActionRowComponentBuilder>,
       ] = [autoroleEmbed, autoroleRow];
 
-    const sentMessages = this.system === "tickets"
-      ? await this.sendMessages(this.channel, INFO, TICKET)
-      : this.system === "autorole"
-        ? await this.sendMessages(this.channel, INFO, AUTOROLE)
-        : await this.sendMessages(this.channel, INFO);
+    const sentMessages =
+      this.system === "tickets"
+        ? await this.sendMessages(this.channel, INFO, TICKET)
+        : this.system === "autorole"
+          ? await this.sendMessages(this.channel, INFO, AUTOROLE)
+          : await this.sendMessages(this.channel, INFO);
 
     const messageIds = sentMessages.map((msg) => {
       return { id: msg.id };
