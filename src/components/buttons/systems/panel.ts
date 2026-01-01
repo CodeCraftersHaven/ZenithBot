@@ -49,6 +49,7 @@ export default commandModule({
         }
         const Systems = new sys(
           ctx.guild?.id!,
+          ctx.guild?.name!,
           system,
           ctx.channel as TextChannel,
         );
