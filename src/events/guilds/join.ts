@@ -134,9 +134,11 @@ export default eventModule({
       where: { id: guild.id },
       create: {
         id: guild.id,
+        name: guild.name,
         systems: systemsData,
       },
       update: {
+        name: guild.name,
         systems: {
           set: systemsData,
         },

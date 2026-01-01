@@ -14,11 +14,18 @@ import {
 export default class Systems {
   private db: PrismaClient = Service("@prisma/client");
   private guildId: string;
+  private guildName: string;
   private channel!: TextChannel;
   private system: string;
-  constructor(guildId: string, system: string, channel?: TextChannel) {
+  constructor(
+    guildId: string,
+    guildName: string,
+    system: string,
+    channel?: TextChannel,
+  ) {
     this.guildId = guildId;
     this.system = system;
+    this.guildName = guildName;
     this.channel = channel!;
   }
   async createPanel(): Promise<string> {
@@ -98,7 +105,7 @@ export default class Systems {
         })
         .catch(async () => {
           await this.db.systems.create({
-            data: { id: this.guildId, systems: systems },
+            data: { id: this.guildId, name: this.guildName, systems: systems },
           });
         });
 

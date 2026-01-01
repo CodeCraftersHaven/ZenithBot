@@ -225,7 +225,7 @@ export default commandModule({
       enable: async () => {
         const system = ctx.options.getString("system", true);
         const channel = ctx.options.getChannel("channel", true) as TextChannel;
-        const Systems = new sys(guildId!, system, channel);
+        const Systems = new sys(guildId!, ctx.guild?.name!, system, channel);
         if (
           system === "selfroles" &&
           ctx.guildId !== process.env.HOME_SERVER_ID!
@@ -241,6 +241,7 @@ export default commandModule({
         const system = ctx.options.getString("system", true);
         const Systems = new sys(
           guildId!,
+          ctx.guild?.name!,
           system.split("-")[0],
           ctx.guild?.channels.cache.get(system.split("-")[1]) as TextChannel,
         );
@@ -259,7 +260,7 @@ export default commandModule({
       addchannel: async () => {
         const system = ctx.options.getString("system", true);
         const channel = ctx.options.getChannel("channel", true) as TextChannel;
-        const Systems = new sys(guildId!, system, channel);
+        const Systems = new sys(guildId!, ctx.guild?.name!, system, channel);
         const res = await Systems.addChannel();
         return await ctx.reply(res);
       },
@@ -268,7 +269,7 @@ export default commandModule({
         const channel = ctx.client.channels.cache.get(
           ctx.options.getString("channel", true),
         ) as TextChannel;
-        const Systems = new sys(guildId!, system, channel);
+        const Systems = new sys(guildId!, ctx.guild?.name!, system, channel);
         const res = await Systems.removeChannel();
         return await ctx.reply(res);
       },

@@ -77,9 +77,13 @@ export const capFirstLetter = (str: string): string => {
 
 export const getEnableCommand = async (c: Client): Promise<string> => {
   const commands = await c.application?.commands.fetch();
-
   const cmd = commands?.find((cmd) => cmd.name === "system")!;
+  return cmd.id;
+};
 
+export const getHelpCommand = async (c: Client): Promise<string> => {
+  const commands = await c.application?.commands.fetch();
+  const cmd = commands?.find((cmd) => cmd.name === "help")!;
   return cmd.id;
 };
 
@@ -126,6 +130,26 @@ export const syncDatabase = async (
 
   for (const g of guilds.values()) {
     const guild = await g.fetch();
+    const findCommand = {
+      find: "Systems",
+      filter: { _id: guild.id },
+    };
+    try {
+      const result: any = await prisma.$runCommandRaw(findCommand);
+      if (result.cursor.firstBatch.length > 0) {
+        const dbGuildRaw = result.cursor.firstBatch[0];
+        if (dbGuildRaw.name == null) {
+          logger.info(`Fixing null or missing name for guild ${guild.id}`);
+          await prisma.systems.update({
+            where: { id: guild.id },
+            data: { name: guild.name },
+          });
+        }
+      }
+    } catch (e) {
+      logger.error("Raw query to check for null name failed.");
+      logger.error(e);
+    }
     const dbGuild = await prisma.systems.findUnique({
       where: { id: guild.id },
     });
@@ -140,6 +164,7 @@ export const syncDatabase = async (
       await prisma.systems.create({
         data: {
           id: guild.id,
+          name: guild.name,
           systems: systemsData,
         },
       });
@@ -168,9 +193,17 @@ export const syncDatabase = async (
         await prisma.systems.update({
           where: { id: guild.id },
           data: {
+            name: guild.name,
             systems: {
               set: updatedSystems,
             },
+          },
+        });
+      } else if (dbGuild.name !== guild.name) {
+        await prisma.systems.update({
+          where: { id: guild.id },
+          data: {
+            name: guild.name,
           },
         });
       }
