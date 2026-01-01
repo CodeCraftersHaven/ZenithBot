@@ -81,6 +81,7 @@ type Roles {
 
 model Systems {
   id      String   @id @map("_id")
+  name    String   @unique
   systems System[]
 }
 

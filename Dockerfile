@@ -12,8 +12,8 @@ COPY src /zenith/src
 COPY prisma /zenith/prisma
 COPY assets /zenith/assets
 
-RUN sern build
-
 RUN npx prisma generate
+
+RUN sern build
 
 CMD ["node", "dist/index.js"]
