@@ -1,4 +1,4 @@
-import { AttachmentBuilder, Client } from "discord.js";
+import { AttachmentBuilder, Client, Guild, OAuth2Guild } from "discord.js";
 import * as path from "path";
 import * as fs from "fs/promises";
 import { PrismaClient, Prisma } from "@prisma/client";
@@ -105,9 +105,8 @@ export const syncDatabase = async (
   logger: Logger,
   prisma: PrismaClient,
   c: Client,
+  specificGuild?: Guild,
 ) => {
-  logger.info("Syncing database documents...");
-  const guilds = await c.guilds.fetch();
   const systemsFolder = path.join(
     path.dirname(fileURLToPath(import.meta.url)),
     "..",
@@ -128,8 +127,19 @@ export const syncDatabase = async (
     (f) => f != "index" && f != "Systems",
   );
 
-  for (const g of guilds.values()) {
-    const guild = await g.fetch();
+  let guilds: (OAuth2Guild | Guild)[] = [];
+
+  if (specificGuild) {
+    logger.info(`Syncing database for guild: ${specificGuild.name}`);
+    guilds = [specificGuild];
+  } else {
+    logger.info("Syncing database documents...");
+    const fetched = await c.guilds.fetch();
+    guilds = Array.from(fetched.values());
+  }
+
+  for (const g of guilds) {
+    const guild = "fetch" in g ? await g.fetch() : g;
     const findCommand = {
       find: "Systems",
       filter: { _id: guild.id },
@@ -209,7 +219,9 @@ export const syncDatabase = async (
       }
     }
   }
-  logger.info(
-    `Synced systems for ${guilds.size} guild${guilds.size === 1 ? "" : "s"}.`,
-  );
+  if (!specificGuild) {
+    logger.info(
+      `Synced systems for ${guilds.length} guild${guilds.length === 1 ? "" : "s"}.`,
+    );
+  }
 };

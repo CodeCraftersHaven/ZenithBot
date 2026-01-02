@@ -6,10 +6,7 @@ import {
   MessagePayload,
   TextChannel,
 } from "discord.js";
-import * as path from "path";
-import * as fs from "fs";
-import { fileURLToPath } from "url";
-import { getEnableCommand } from "#utils";
+import { getEnableCommand, syncDatabase } from "#utils";
 
 export default eventModule({
   type: EventType.Discord,
@@ -22,19 +19,7 @@ export default eventModule({
       "@prisma/client",
       "@sern/client",
     );
-    const systemsFolder = `${path.join(fileURLToPath(import.meta.url), "../../..", "systems")}`;
-    const systems = fs.readdirSync(systemsFolder).map(async (file: string) => {
-      const systemPath = path.join(systemsFolder, file);
-      const systemModule = await import(systemPath);
-
-      const systemName =
-        systemModule.default?.name || path.basename(file, path.extname(file));
-      return systemName as string;
-    });
-    const systemsList = await Promise.all(systems);
-    const filteredSystems = systemsList.filter(
-      (f) => f != "index" && f != "Systems",
-    );
+    
     const auditLogs = await guild.fetchAuditLogs({
       type: AuditLogEvent.BotAdd,
       limit: 1,
@@ -124,25 +109,6 @@ export default eventModule({
       }, 5 * 60_000);
     }
 
-    let systemsData = filteredSystems.map((s) => ({
-      name: s.toLowerCase(),
-      enabled: false,
-      channels: [],
-    }));
-
-    await prisma.systems.upsert({
-      where: { id: guild.id },
-      create: {
-        id: guild.id,
-        name: guild.name,
-        systems: systemsData,
-      },
-      update: {
-        name: guild.name,
-        systems: {
-          set: systemsData,
-        },
-      },
-    });
+    await syncDatabase(logger, prisma, c, guild);
   },
 });
