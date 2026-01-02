@@ -39,16 +39,15 @@ export default commandModule({
       check: async () => {
         const currentRole = await new autorole(true).getRole(guild.id);
         if (!currentRole) {
-            await ctx.editReply("Auto Role not set");
-            return;
+          await ctx.editReply("Auto Role not set");
+          return;
         }
         const role = guild.roles.cache.get(currentRole);
         if (!role) {
-            await ctx.editReply("Selected role not found");
-            return;
+          await ctx.editReply("Selected role not found");
+          return;
         }
-        await ctx.editReply(`The autorole is set to ${role}!`)
-
+        await ctx.editReply(`The autorole is set to ${role}!`);
       },
       default: async () => {
         await ctx.editReply("I'm not even a button!");

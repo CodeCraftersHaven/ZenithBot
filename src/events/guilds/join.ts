@@ -19,7 +19,7 @@ export default eventModule({
       "@prisma/client",
       "@sern/client",
     );
-    
+
     const auditLogs = await guild.fetchAuditLogs({
       type: AuditLogEvent.BotAdd,
       limit: 1,
