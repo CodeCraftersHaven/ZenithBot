@@ -106,7 +106,16 @@ type SMessage {
 //-------------------------------
 
 model Feedback {
-  id       String @id @map("_id")
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  autorole  Feelings
+  counting  Feelings
+  giveaway  Feelings
+  selfroles Feelings
+  tickets   Feelings
+  welcome   Feelings
+}
+
+type Feelings {
   likes    Int
   dislikes Int
   users    User[]
@@ -115,6 +124,7 @@ model Feedback {
 type User {
   userId   String
   userName String
+  guildId  String
   feeling  String?
   comment  String?
 }

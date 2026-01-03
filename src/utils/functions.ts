@@ -101,12 +101,69 @@ export const checkIfSystemEnabled = async (
   return enabled;
 };
 
+export const getSystemFromMessage = async (
+  systems: Prisma.SystemsDelegate<DefaultArgs, Prisma.PrismaClientOptions>,
+  guildId: string,
+  messageId: string,
+) => {
+  const result = await systems.findUnique({
+    where: { id: guildId },
+  });
+
+  if (!result) return null;
+
+  for (const system of result.systems) {
+    for (const channel of system.channels) {
+      const message = channel.messages.find((m) => m.id === messageId);
+      if (message) return system.name.toLowerCase();
+    }
+  }
+  return null;
+};
+
 export const syncDatabase = async (
   logger: Logger,
   prisma: PrismaClient,
   c: Client,
   specificGuild?: Guild,
 ) => {
+  const feedbackSystem = await prisma.feedback.findFirst();
+  if (!feedbackSystem) {
+    await prisma.feedback.create({
+      data: {
+        autorole: {
+          likes: 0,
+          dislikes: 0,
+          users: [],
+        },
+        counting: {
+          likes: 0,
+          dislikes: 0,
+          users: [],
+        },
+        giveaway: {
+          likes: 0,
+          dislikes: 0,
+          users: [],
+        },
+        selfroles: {
+          likes: 0,
+          dislikes: 0,
+          users: [],
+        },
+        tickets: {
+          likes: 0,
+          dislikes: 0,
+          users: [],
+        },
+        welcome: {
+          likes: 0,
+          dislikes: 0,
+          users: [],
+        },
+      },
+    });
+  }
   const systemsFolder = path.join(
     path.dirname(fileURLToPath(import.meta.url)),
     "..",

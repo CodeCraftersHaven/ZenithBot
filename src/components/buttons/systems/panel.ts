@@ -10,23 +10,31 @@ import {
   TextInputBuilder,
   TextInputStyle,
 } from "discord.js";
+import { getSystemFromMessage } from "#utils";
 
 let system: string;
+
+const validSystems = [
+  "autorole",
+  "counting",
+  "giveaway",
+  "selfroles",
+  "tickets",
+  "welcome",
+] as const;
+type SystemKey = (typeof validSystems)[number];
 
 export default commandModule({
   type: CommandType.Button,
   async execute(ctx, { deps, params }) {
-    const [sys, feedback] = [
+    const [sys, feedback, systems] = [
       deps["systems"].Systems,
       deps["@prisma/client"].feedback,
+      deps["@prisma/client"].systems,
     ];
 
     const act = params! as "delete" | "like" | "dislike" | "comment";
 
-    const userFeedback = await feedback.findMany({
-      where: { id: ctx.guild?.id },
-      select: { users: true },
-    });
     const commentButton = new ButtonBuilder({
       custom_id: "panel/comment",
       emoji: "💬",
@@ -36,17 +44,30 @@ export default commandModule({
     const commentRow = new ActionRowBuilder<ButtonBuilder>({
       components: [commentButton],
     });
+
+    const getSysName = async (): Promise<SystemKey | null> => {
+      const name = await getSystemFromMessage(
+        systems,
+        ctx.guildId!,
+        ctx.message.id,
+      );
+      if (!name) return null;
+      const lowerName = name.toLowerCase();
+      return validSystems.find((s) => s === lowerName) || null;
+    };
+
     const acts = {
       delete: async () => {
         await ctx.deferReply({ flags: MessageFlags.Ephemeral });
         if (!ctx.memberPermissions?.has("ManageGuild")) {
           return await ctx.editReply("You can't delete this message.");
         }
-        const embed = ctx.message.embeds[0];
 
-        if (embed) {
-          system = embed.description?.split(" ")[0].toLowerCase()!;
-        }
+        const sysName = await getSysName();
+        if (!sysName) return await ctx.editReply("System not found.");
+
+        system = sysName;
+
         const Systems = new sys(
           ctx.guild?.id!,
           ctx.guild?.name!,
@@ -65,76 +86,109 @@ export default commandModule({
       },
       like: async () => {
         await ctx.deferReply({ flags: MessageFlags.Ephemeral });
-        const feedbackId = userFeedback[0].users[0].userId;
-        if (feedbackId === ctx.user.id) {
-          await ctx.editReply(
-            "You have already shared your feelings. Thank you!",
-          );
-          return;
+        const sysName = await getSysName();
+        if (!sysName) return await ctx.editReply("System not found.");
+
+        const feedbackDoc = await feedback.findFirst();
+        if (!feedbackDoc)
+          return await ctx.editReply("Feedback system not initialized.");
+
+        const currentSystemFeedback = feedbackDoc[sysName];
+
+        if (!currentSystemFeedback)
+          return await ctx.editReply("Feedback not available for this system.");
+
+        const existingUserIndex = currentSystemFeedback.users.findIndex(
+          (u) => u.userId === ctx.user.id,
+        );
+
+        if (existingUserIndex !== -1) {
+          const user = currentSystemFeedback.users[existingUserIndex];
+          if (user.feeling === "like") {
+            return await ctx.editReply(
+              "You have already liked this system. Thank you!",
+            );
+          } else {
+            currentSystemFeedback.dislikes--;
+            currentSystemFeedback.likes++;
+            currentSystemFeedback.users[existingUserIndex].feeling = "like";
+          }
+        } else {
+          currentSystemFeedback.likes++;
+          currentSystemFeedback.users.push({
+            userId: ctx.user.id,
+            userName: ctx.user.displayName,
+            guildId: ctx.guild?.id!,
+            feeling: "like",
+            comment: "",
+          });
         }
 
-        const newUser = {
-          userId: ctx.user.id,
-          userName: ctx.user.displayName,
-          feeling: "like",
-          comment: "",
-        };
-        await feedback.upsert({
-          where: { id: ctx.guild?.id! },
-          create: {
-            id: ctx.guild?.id!,
-            likes: 1,
-            dislikes: 0,
-            users: { set: [newUser] },
-          },
-          update: {
-            likes: { increment: 1 },
-            dislikes: { decrement: 1 },
-            users: {
-              updateMany: { where: { userId: ctx.user.id }, data: newUser },
-            },
+        await feedback.update({
+          where: { id: feedbackDoc.id },
+          data: {
+            [sysName]: currentSystemFeedback,
           },
         });
-        await ctx.editReply({
+
+        return await ctx.editReply({
           content:
-            "Thank you for your feedback. Would you like to leave a comment?",
+            "Thank you for your feedback! Would you like to leave a comment?\n-# " +
+            sysName,
           components: [commentRow],
         });
       },
       dislike: async () => {
         await ctx.deferReply({ flags: MessageFlags.Ephemeral });
-        const feedbackId = userFeedback[0].users[0].userId;
-        if (feedbackId === ctx.user.id) {
-          await ctx.editReply(
-            "You have already shared your feelings. Thank you!",
-          );
-          return;
+        const sysName = await getSysName();
+        if (!sysName) return await ctx.editReply("System not found.");
+
+        const feedbackDoc = await feedback.findFirst();
+        if (!feedbackDoc)
+          return await ctx.editReply("Feedback system not initialized.");
+
+        const currentSystemFeedback = feedbackDoc[sysName];
+
+        if (!currentSystemFeedback)
+          return await ctx.editReply("Feedback not available for this system.");
+
+        const existingUserIndex = currentSystemFeedback.users.findIndex(
+          (u) => u.userId === ctx.user.id,
+        );
+
+        if (existingUserIndex !== -1) {
+          const user = currentSystemFeedback.users[existingUserIndex];
+          if (user.feeling === "dislike") {
+            return await ctx.editReply(
+              "You have already disliked this system. Thank you!",
+            );
+          } else {
+            currentSystemFeedback.likes--;
+            currentSystemFeedback.dislikes++;
+            currentSystemFeedback.users[existingUserIndex].feeling = "dislike";
+          }
+        } else {
+          currentSystemFeedback.dislikes++;
+          currentSystemFeedback.users.push({
+            userId: ctx.user.id,
+            userName: ctx.user.displayName,
+            guildId: ctx.guild?.id!,
+            feeling: "dislike",
+            comment: "",
+          });
         }
-        const newUser = {
-          userId: ctx.user.id,
-          userName: ctx.user.displayName,
-          feeling: "dislike",
-          comment: "",
-        };
-        await feedback.upsert({
-          where: { id: ctx.guild?.id! },
-          create: {
-            id: ctx.guild?.id!,
-            likes: 0,
-            dislikes: 1,
-            users: { set: [newUser] },
-          },
-          update: {
-            dislikes: { increment: 1 },
-            likes: { decrement: 1 },
-            users: {
-              updateMany: { where: { userId: ctx.user.id }, data: newUser },
-            },
+
+        await feedback.update({
+          where: { id: feedbackDoc.id },
+          data: {
+            [sysName]: currentSystemFeedback,
           },
         });
-        await ctx.editReply({
+
+        return await ctx.editReply({
           content:
-            "Thank you for your feedback. Would you like to leave a comment?",
+            "Thank you for your feedback. Would you like to leave a comment?\n-# " +
+            sysName,
           components: [commentRow],
         });
       },
