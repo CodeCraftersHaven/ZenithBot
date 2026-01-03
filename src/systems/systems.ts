@@ -111,10 +111,11 @@ export default class Systems {
 
       return `${capFirstLetter(this.system)} system has been enabled in <#${this.channel.id}>. Please update channel permissions if needed.`;
     } catch (error: any) {
-      return `Failed to update database or send panel(s) to <#${this.channel.id}>. Error: ${error.message == "Missing Permissions"
+      return `Failed to update database or send panel(s) to <#${this.channel.id}>. Error: ${
+        error.message == "Missing Permissions"
           ? "I can't view that channel or send messages in that channel. Please update my roles/permissions to use that channel."
           : error.message
-        }`;
+      }`;
     }
   }
 
@@ -312,7 +313,7 @@ export default class Systems {
           where: { id: this.guildId },
         });
       }
-      
+
       return `Disabled panel in <#${this.channel.id}>.`;
     } catch (error: any) {
       return `Failed to remove channel. Error: ${error.message}`;
@@ -379,9 +380,9 @@ export default class Systems {
     );
 
     const INFO: [
-      EmbedBuilder,
-      ActionRowBuilder<MessageActionRowComponentBuilder>,
-    ] = [infoEmbed, infoRow],
+        EmbedBuilder,
+        ActionRowBuilder<MessageActionRowComponentBuilder>,
+      ] = [infoEmbed, infoRow],
       TICKET: [
         EmbedBuilder,
         ActionRowBuilder<MessageActionRowComponentBuilder>,
