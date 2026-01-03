@@ -1,6 +1,5 @@
 import { commandModule, CommandType } from "@sern/handler";
 import { MessageFlags, TextChannel } from "discord.js";
-import { getSystemFromMessage } from "#utils";
 
 const validSystems = [
   "autorole",
@@ -16,11 +15,8 @@ export default commandModule({
   type: CommandType.Modal,
   description: "send me your feedback",
   async execute(ctx, { deps, params }) {
-    const [sys, db, feedback] = [
-      deps["systems"].Systems,
-      deps["@prisma/client"].systems,
-      deps["@prisma/client"].feedback,
-    ];
+    const [feedback] = [deps["@prisma/client"].feedback];
+
     const act = params! as "comment";
     await ctx.deferReply({ flags: MessageFlags.Ephemeral });
     const acts = {
