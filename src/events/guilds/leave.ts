@@ -1,14 +1,15 @@
 import { eventModule, EventType, Services } from "@sern/handler";
-import { Events } from "discord.js";
+import { Events, Guild } from "discord.js";
+import { Prisma } from "@prisma/client";
 
 export default eventModule({
   type: EventType.Discord,
   name: Events.GuildDelete,
-  async execute(guild) {
+  async execute(guild: Guild) {
     const [logger, prisma] = Services("@sern/logger", "@prisma/client");
 
     const feedbackDoc = await prisma.feedback.findFirst();
-    let feedbackUpdatePromise;
+    let feedbackUpdatePromise: Prisma.PrismaPromise<unknown> | undefined;
 
     if (feedbackDoc) {
       const systems = [
@@ -19,7 +20,7 @@ export default eventModule({
         "tickets",
         "welcome",
       ] as const;
-      const dataToUpdate: any = {};
+      const dataToUpdate: Prisma.FeedbackUpdateInput = {};
 
       for (const sys of systems) {
         const currentData = feedbackDoc[sys];
@@ -56,7 +57,7 @@ export default eventModule({
       }
     }
 
-    const transaction = [
+    const transaction: Prisma.PrismaPromise<unknown>[] = [
       prisma.systems.deleteMany({ where: { id: guild.id } }),
       prisma.autorole.deleteMany({ where: { id: guild.id } }),
       prisma.counting.deleteMany({ where: { id: guild.id } }),
@@ -66,7 +67,6 @@ export default eventModule({
     ];
 
     if (feedbackUpdatePromise) {
-      // @ts-ignore
       transaction.push(feedbackUpdatePromise);
     }
 
