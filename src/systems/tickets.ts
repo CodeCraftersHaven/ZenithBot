@@ -5,10 +5,11 @@ import { Client } from "discord.js";
 export default class Tickets {
   private db: PrismaClient = Service("@prisma/client");
   private c: Client = Service("@sern/client");
-  private enabled: boolean;
   private guildId: string;
   private channelId: string;
   private userId: string;
+  enabled: boolean;
+
   constructor(
     enabled: boolean = false,
     guildId: string,

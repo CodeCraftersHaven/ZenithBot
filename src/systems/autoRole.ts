@@ -4,7 +4,7 @@ import { GuildMember } from "discord.js";
 
 export default class AutoRole {
   private prisma: PrismaClient;
-  private enabled: boolean;
+  enabled: boolean;
 
   constructor(enabled: boolean = false) {
     this.enabled = enabled;

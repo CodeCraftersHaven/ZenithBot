@@ -5,14 +5,14 @@ import * as path from "path";
 import { fileURLToPath } from "url";
 
 const assetsPath = `${path.join(fileURLToPath(import.meta.url), "../../../assets")}`;
-// Register a futuristic font (Download and place it in your project)
+
 registerFont(assetsPath + "/FuturisticRotteslaItalic.ttf", {
   family: "Cyberpunk",
 });
 
 export default class Welcome {
   private buffer: Buffer<ArrayBufferLike>;
-  private enabled: boolean;
+  enabled: boolean;
 
   constructor(enabled: boolean = false) {
     this.enabled = enabled;

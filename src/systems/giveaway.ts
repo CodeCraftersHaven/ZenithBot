@@ -1,4 +1,3 @@
-import { prisma } from "#utils";
 import { PrismaClient } from "@prisma/client";
 import { Service } from "@sern/handler";
 import {
@@ -6,9 +5,7 @@ import {
   ButtonBuilder,
   ButtonStyle,
   Client,
-  Embed,
   EmbedBuilder,
-  Message,
   TextChannel,
 } from "discord.js";
 import { createWriteStream } from "fs";
@@ -165,7 +162,6 @@ export default class Giveaways {
     return Array.from(winners);
   }
 
-  // Custom logger function
   log(message: any) {
     const logFile = createWriteStream("response.log", { flags: "a" });
     const timestamp = new Date().toISOString();
