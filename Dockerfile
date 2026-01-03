@@ -13,7 +13,7 @@ COPY prisma /zenith/prisma
 COPY assets /zenith/assets
 
 RUN npx prisma generate
-RUN npx prisma db push
+# RUN npx prisma db push
 
 RUN sern build
 
