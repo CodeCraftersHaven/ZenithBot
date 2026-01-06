@@ -7,15 +7,23 @@ export default eventModule({
   name: Events.GuildMemberAdd,
   execute: async (member) => {
     if (member.user.bot) return;
-    
+
     const [{ Welcome, AutoRole }, prisma, logger] = Services(
       "systems",
       "@prisma/client",
       "@sern/logger",
     );
 
-    const welcome_system = await findSystem(prisma.systems, member.guild.id, "welcome");
-    const autorole_system = await findSystem(prisma.systems, member.guild.id, "autorole");
+    const welcome_system = await findSystem(
+      prisma.systems,
+      member.guild.id,
+      "welcome",
+    );
+    const autorole_system = await findSystem(
+      prisma.systems,
+      member.guild.id,
+      "autorole",
+    );
 
     if (!welcome_system)
       return logger.warn(
