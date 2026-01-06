@@ -7,7 +7,7 @@ import { fileURLToPath } from "url";
 const assetsPath = `${path.join(fileURLToPath(import.meta.url), "../../../assets")}`;
 
 registerFont(assetsPath + "/FuturisticRotteslaItalic.ttf", {
-  family: "Cyberpunk",
+  family: "Normal",
 });
 
 export default class Welcome {
@@ -47,7 +47,7 @@ export default class Welcome {
     ctx.drawImage(avatar, avatarX, avatarY, avatarSize, avatarSize);
     ctx.restore();
 
-    ctx.font = "bold 32px Cyberpunk";
+    ctx.font = "bold 32px";
     ctx.fillStyle = "#00ffff";
     ctx.textAlign = "center";
     ctx.strokeStyle = "#ff00ff";
@@ -69,7 +69,7 @@ export default class Welcome {
     ctx.strokeText(`to ${member.guild.name}`, canvas.width / 2, guildTextY);
     ctx.fillText(`to ${member.guild.name}`, canvas.width / 2, guildTextY);
 
-    ctx.font = "bold 24px Cyberpunk";
+    ctx.font = "bold 24px";
     const memberTextY = guildTextY + 90;
     const botCount = member.guild.members.cache.filter((m) => m.user.bot).size;
     const userCount = member.guild.memberCount;
