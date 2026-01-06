@@ -6,6 +6,7 @@ export default eventModule({
   type: EventType.Discord,
   name: Events.GuildMemberAdd,
   execute: async (member) => {
+    if (member.user.bot) return;
     
     const [{ Welcome, AutoRole }, prisma, logger] = Services(
       "systems",
