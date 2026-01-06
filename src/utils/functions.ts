@@ -114,7 +114,7 @@ export const findSystem = async (
     },
   });
   return systemsDoc!.systems.find((s) => s.name === system && s.enabled);
-}
+};
 
 export const getSystemFromMessage = async (
   systems: Prisma.SystemsDelegate<DefaultArgs, Prisma.PrismaClientOptions>,

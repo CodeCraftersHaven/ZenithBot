@@ -45,12 +45,12 @@ type Entry {
 //-------------------------------
 
 model UserTicket {
-  id     String  @id @map("_id")
+  id     String  @id @map("_id") //userId
   guilds Guild[]
 }
 
 type Guild {
-  id      String
+  id      String //guildId
   tickets Ticket[]
 }
 
@@ -100,6 +100,7 @@ type Channel {
   name     String
   id       String
   messages SMessage[]
+  staffId  String?
 }
 
 type SMessage {

@@ -1,10 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 import { Service } from "@sern/handler";
-import { Client } from "discord.js";
 
 export default class Tickets {
   private db: PrismaClient = Service("@prisma/client");
-  private c: Client = Service("@sern/client");
   private guildId: string;
   private channelId: string;
   private userId: string;

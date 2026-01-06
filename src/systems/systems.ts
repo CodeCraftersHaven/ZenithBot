@@ -17,16 +17,19 @@ export default class Systems {
   private guildName: string;
   private channel!: TextChannel;
   private system: string;
+  private staffId?: string;
   constructor(
     guildId: string,
     guildName: string,
     system: string,
     channel?: TextChannel,
+    staffId?: string,
   ) {
     this.guildId = guildId;
     this.system = system;
     this.guildName = guildName;
     this.channel = channel!;
+    this.staffId = staffId!;
   }
   async createPanel(): Promise<string> {
     try {
@@ -82,6 +85,7 @@ export default class Systems {
             id: this.channel.id,
             name: this.channel.name,
             messages: messageIds,
+            staffId: this.staffId || "",
           });
         }
       } else {
@@ -93,6 +97,7 @@ export default class Systems {
               id: this.channel.id,
               name: this.channel.name,
               messages: messageIds,
+              staffId: this.staffId || "",
             },
           ],
         });
@@ -236,6 +241,7 @@ export default class Systems {
         id: this.channel.id,
         name: this.channel.name,
         messages: messageIds,
+        staffId: this.staffId || "",
       });
       await this.db.systems.update({
         where: { id: this.guildId },
@@ -348,7 +354,7 @@ export default class Systems {
       .setDescription("Click 📩 to open a ticket")
       .setColor("Random");
 
-    const ticketButtons = ["📩|Open", "✅|Check"].map((button) => {
+    const ticketButtons = ["📩|Open", "✅|Check", "🛡️|Staff"].map((button) => {
       const [emoji, name] = button.split("|");
       return new ButtonBuilder({
         style: name === "Open" ? ButtonStyle.Primary : ButtonStyle.Success,
