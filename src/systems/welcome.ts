@@ -71,13 +71,16 @@ export default class Welcome {
 
     ctx.font = "bold 24px Cyberpunk";
     const memberTextY = guildTextY + 90;
+    const botCount = member.guild.members.cache.filter((m) => m.user.bot).size;
+    const userCount = member.guild.memberCount;
+    const memberCount = userCount - botCount;
     ctx.strokeText(
-      `You are the ${member.guild.memberCount}${this.getOrdinalSuffix(member.guild.memberCount)} member!`,
+      `You are the ${memberCount}${this.getOrdinalSuffix(memberCount)} member!`,
       canvas.width / 2,
       memberTextY,
     );
     ctx.fillText(
-      `You are the ${member.guild.memberCount}${this.getOrdinalSuffix(member.guild.memberCount)} member!`,
+      `You are the ${memberCount}${this.getOrdinalSuffix(memberCount)} member!`,
       canvas.width / 2,
       memberTextY,
     );
