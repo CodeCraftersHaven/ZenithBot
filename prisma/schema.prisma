@@ -8,6 +8,10 @@ generator client {
   provider = "prisma-client-js"
 }
 
+/**
+ * THIS ERROR IS EXPECTED UNTIL MONGO IS UPDATED IN PRISMA.IO
+ */
+
 datasource db {
   provider = "mongodb"
   url      = env("DATABASE_URL")
@@ -68,11 +72,12 @@ model SelfRoles {
 type Message {
   id    String
   title String
-  roles Roles
+  roles Role[]
 }
 
-type Roles {
-  roleId String[]
+type Role {
+  id   String
+  name String
 }
 
 //-------------------------------
