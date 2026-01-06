@@ -103,6 +103,19 @@ export const checkIfSystemEnabled = async (
   return enabled;
 };
 
+export const findSystem = async (
+  systems: Prisma.SystemsDelegate<DefaultArgs, Prisma.PrismaClientOptions>,
+  guildId: string,
+  system: string,
+) => {
+  const systemsDoc = await systems.findFirst({
+    where: {
+      id: guildId,
+    },
+  });
+  return systemsDoc!.systems.find((s) => s.name === system && s.enabled);
+}
+
 export const getSystemFromMessage = async (
   systems: Prisma.SystemsDelegate<DefaultArgs, Prisma.PrismaClientOptions>,
   guildId: string,
