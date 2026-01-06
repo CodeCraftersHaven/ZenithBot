@@ -1,3 +1,4 @@
+import { findSystem } from "#utils";
 import { eventModule, EventType, Services } from "@sern/handler";
 import { EmbedBuilder, Events, TextChannel } from "discord.js";
 
@@ -5,28 +6,22 @@ export default eventModule({
   type: EventType.Discord,
   name: Events.GuildMemberAdd,
   execute: async (member) => {
+    
     const [{ Welcome, AutoRole }, prisma, logger] = Services(
       "systems",
       "@prisma/client",
       "@sern/logger",
     );
 
-    const welcome_system = await prisma.systems.findFirst({
-      where: {
-        id: member.guild.id,
-        systems: {
-          some: { name: "welcome", enabled: true, channels: { isSet: true } },
-        },
-      },
-      select: { systems: { select: { channels: { select: { id: true } } } } },
-    });
+    const welcome_system = await findSystem(prisma.systems, member.guild.id, "welcome");
+    const autorole_system = await findSystem(prisma.systems, member.guild.id, "autorole");
 
     if (!welcome_system)
       return logger.warn(
         `No welcome system found in ${member.guild.name}(${member.guild.id})`,
       );
 
-    for (const { id } of welcome_system.systems.flatMap((s) => s.channels)) {
+    for (const { id } of welcome_system.channels.flatMap((s) => s)) {
       const channel = member.guild.channels.cache.get(id) as TextChannel;
       if (!channel) continue;
 
@@ -40,15 +35,6 @@ export default eventModule({
 
       channel.send({ embeds: [embed], files: [image] });
     }
-
-    const autorole_system = await prisma.systems.findFirst({
-      where: {
-        id: member.guild.id,
-        systems: {
-          some: { name: "autorole", enabled: true },
-        },
-      },
-    });
 
     if (!autorole_system)
       return logger.warn(
