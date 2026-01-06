@@ -6,24 +6,51 @@ import {
   ChannelType,
   Guild,
   MessageFlags,
+  PermissionsBitField,
   PrivateThreadChannel,
   TextChannel,
   User,
+  UserSelectMenuBuilder,
 } from "discord.js";
 
 export default commandModule({
   type: CommandType.Button,
   async execute(ctx, { deps, params }) {
     await ctx.deferReply({ flags: MessageFlags.Ephemeral });
-    const [tickets, db, logger] = [
-      deps["systems"].Tickets,
-      deps["@prisma/client"],
-      deps["@sern/logger"],
-    ];
+    const [tickets] = [deps["systems"].Tickets];
     const user = ctx.user as User;
     const guild = ctx.guild as Guild;
 
-    const act = params! as "open" | "close" | "reopen" | "check";
+    const act = params! as
+      | "open"
+      | "close"
+      | "reopen"
+      | "check"
+      | "add-user"
+      | "remove-user";
+
+    const buttons = [
+      "🔒|Close",
+      "🔒|Reopen",
+      "➕|Add-User",
+      "➖|Remove-User",
+    ].map((button) => {
+      const [emoji, name] = button.split("|");
+      return new ButtonBuilder({
+        style: ButtonStyle.Primary,
+        emoji,
+        label: name.replace("-", " "),
+        custom_id: `tickets/${name.toLowerCase()}`,
+      });
+    });
+
+    const closeRow = new ActionRowBuilder<ButtonBuilder>({
+      components: [buttons[0], buttons[2], buttons[3]],
+    });
+
+    const reopenRow = new ActionRowBuilder<ButtonBuilder>({
+      components: [buttons[1]],
+    });
 
     const acts = {
       open: async () => {
@@ -37,14 +64,8 @@ export default commandModule({
         const Ticket = new tickets(true, guild.id, newThread.id, user.id);
         await newThread.join();
         await newThread.members.add(user.id);
-        const closeTicket = new ButtonBuilder()
-          .setCustomId("tickets/close")
-          .setLabel("Close Ticket")
-          .setStyle(ButtonStyle.Primary)
-          .setEmoji("🔒");
-        const closeRow = new ActionRowBuilder<ButtonBuilder>({
-          components: [closeTicket],
-        });
+        newThread.ownerId = user.id;
+
         await newThread.send({
           content: `<@${user.id}>, here is your ticket channel. Please briefly describe your issue and a moderator will be with you shortly.`,
           components: [closeRow],
@@ -56,24 +77,41 @@ export default commandModule({
         );
       },
       close: async () => {
-        const channel = ctx.message.channel as PrivateThreadChannel;
+        const channel = ctx.channel as PrivateThreadChannel;
+        if (
+          channel.ownerId !== ctx.user.id ||
+          !ctx.memberPermissions!.has(PermissionsBitField.Flags.ManageChannels)
+        ) {
+          return ctx.editReply({
+            content:
+              "You do not have permission to remove users from this ticket.",
+          });
+        }
         const Ticket = new tickets(true, guild.id, channel.id, user.id);
         await channel.setLocked(true, "user has resolved their issue.");
-        await channel.send({
-          content: `The channel has been locked. Only mods can reopen the ticket if needed..`,
-        });
+        await ctx.message.edit({ components: [reopenRow] });
         await Ticket.closeTicket();
-
         return await ctx.deleteReply();
       },
       reopen: async () => {
-        const channel = ctx.message.channel as PrivateThreadChannel;
+        const channel = ctx.channel as PrivateThreadChannel;
+        if (
+          channel.ownerId !== ctx.user.id ||
+          !ctx.memberPermissions?.has(PermissionsBitField.Flags.ManageChannels)
+        ) {
+          return ctx.editReply({
+            content:
+              "You do not have permission to remove users from this ticket.",
+          });
+        }
         const Ticket = new tickets(true, guild.id, channel.id, user.id);
         await channel.setLocked(false, "user needs more help");
         await Ticket.reopenTicket();
-        return await ctx.editReply(
-          "I've reopened the channel for you. Do you still need help?",
-        );
+        await ctx.message.edit({
+          content: ctx.message.content,
+          components: [closeRow],
+        });
+        return await ctx.deleteReply();
       },
       check: async () => {
         const channel = ctx.message.channel as TextChannel;
@@ -86,6 +124,61 @@ export default commandModule({
           );
         }
         return await ctx.editReply("You have no tickets open.");
+      },
+      "add-user": async () => {
+        const channel = ctx.channel as PrivateThreadChannel;
+        if (
+          channel.ownerId !== ctx.user.id ||
+          !ctx.memberPermissions!.has(PermissionsBitField.Flags.ManageChannels)
+        ) {
+          return ctx.editReply({
+            content:
+              "You do not have permission to remove users from this ticket.",
+          });
+        }
+        const selectMenu = new ActionRowBuilder<UserSelectMenuBuilder>({
+          components: [
+            new UserSelectMenuBuilder({
+              customId: "add-user",
+              placeholder: "Select a user to add to the ticket",
+              min_values: 1,
+              max_values: 1,
+            }),
+          ],
+        });
+
+        await ctx.editReply({
+          content: "Select a user to add to the ticket.",
+          components: [selectMenu],
+        });
+      },
+      "remove-user": async () => {
+        const channel = ctx.channel as PrivateThreadChannel;
+        if (
+          channel.ownerId !== ctx.user.id ||
+          !ctx.memberPermissions!.has(PermissionsBitField.Flags.ManageChannels)
+        ) {
+          return ctx.editReply({
+            content:
+              "You do not have permission to remove users from this ticket.",
+          });
+        }
+
+        const selectMenu = new ActionRowBuilder<UserSelectMenuBuilder>({
+          components: [
+            new UserSelectMenuBuilder({
+              customId: "remove-user",
+              placeholder: "Select a user to remove from the ticket",
+              min_values: 1,
+              max_values: 1,
+            }),
+          ],
+        });
+
+        await ctx.editReply({
+          content: "Select a user to remove from the ticket.",
+          components: [selectMenu],
+        });
       },
       default: () => {},
     };
