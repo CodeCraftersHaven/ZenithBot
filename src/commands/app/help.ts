@@ -20,16 +20,16 @@ export default commandModule({
       required: true,
     },
   ],
-  execute: async (ctx, { deps }) => {
+  execute: async (ctx) => {
     const problem = ctx.options.getString("problem", true);
     const embed = new EmbedBuilder()
       .setTitle("I'm here to help you!")
-      .setAuthor({ name: ctx.client.user?.username! })
+      .setAuthor({ name: ctx.client.user!.username })
       .setFooter({
         text: `Thank you for using me!`,
         iconURL: ctx.client.user?.displayAvatarURL(),
       })
-      .setImage(ctx.client.user?.bannerURL()!);
+      .setImage(ctx.client.user!.bannerURL()!);
     let description: string;
     const problems = {
       missingperms: async () => {

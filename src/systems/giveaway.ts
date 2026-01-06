@@ -54,7 +54,7 @@ export default class Giveaways {
 
   async getParticipantsFromDb(messageId: string): Promise<Entry[]> {
     const giveaway = await this.getGiveaway(messageId);
-    return giveaway?.entries!;
+    return giveaway!.entries;
   }
 
   async drawWinnersFromDb(messageId: string, count: number): Promise<string[]> {
@@ -99,7 +99,7 @@ export default class Giveaways {
   async getGiveawayChannel(messageId: string) {
     const giveaway = await this.getGiveaway(messageId);
 
-    return this.c.channels.cache.get(giveaway?.channelId!) as TextChannel;
+    return this.c.channels.cache.get(giveaway!.channelId) as TextChannel;
   }
 
   async rerollWinners(messageId: string): Promise<string[]> {
@@ -162,7 +162,7 @@ export default class Giveaways {
     return Array.from(winners);
   }
 
-  log(message: any) {
+  log(message: string | object) {
     const logFile = createWriteStream("response.log", { flags: "a" });
     const timestamp = new Date().toISOString();
 
@@ -173,11 +173,7 @@ export default class Giveaways {
       logFile.write(`[${timestamp}] ${message}\n`);
     }
   }
-  async createTimers(
-    interval: number,
-    restart: boolean = false,
-    options: Opts,
-  ) {
+  async createTimers(interval: number, options: Opts) {
     if (interval < 0) return;
     const claimButton = new ButtonBuilder({
       custom_id: "giveaways/claim",
@@ -215,7 +211,7 @@ export default class Giveaways {
       const winnerMentions = giveawayWinners.map((w) => `<@${w}>`).join(", ");
 
       const embed = msg.embeds[0];
-      let newEmbed = new EmbedBuilder(EmbedBuilder.from(embed).toJSON());
+      const newEmbed = new EmbedBuilder(EmbedBuilder.from(embed).toJSON());
       const winnersField = embed.fields.find((f) =>
         f.name.toLowerCase().includes("winners"),
       );

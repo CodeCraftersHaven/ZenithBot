@@ -1,3 +1,4 @@
+import { getEnableCommand, syncDatabase } from "#utils";
 import { eventModule, EventType, Services } from "@sern/handler";
 import {
   AuditLogEvent,
@@ -6,7 +7,6 @@ import {
   MessagePayload,
   TextChannel,
 } from "discord.js";
-import { getEnableCommand, syncDatabase } from "#utils";
 
 export default eventModule({
   type: EventType.Discord,
@@ -39,8 +39,8 @@ export default eventModule({
       (channel) =>
         channel.isTextBased() &&
         channel
-          .permissionsFor(guild.members.me!)
-          ?.has(["ViewChannel", "SendMessages"]),
+          .permissionsFor(guild.members.me!)!
+          .has(["ViewChannel", "SendMessages"]),
     ) as TextChannel | undefined;
     if (!firstChannel) return;
     const embed = {
@@ -95,9 +95,7 @@ export default eventModule({
       }
       console.error("Unable to send message after multiple attempts.");
     }
-    try {
-      sendMessageWithRetry(firstChannel, { embeds: [embed] });
-    } catch (_) {
+    sendMessageWithRetry(firstChannel, { embeds: [embed] }).catch(() => {
       entry?.executor?.createDM(true).then((c) =>
         c.send({
           content: `Apologies for any inconvenience this message may cause. You invited me to ${guild.name}(${guild.id})
@@ -107,7 +105,7 @@ export default eventModule({
       setTimeout(() => {
         sendMessageWithRetry(firstChannel, { embeds: [embed] }, 2, 60000);
       }, 5 * 60_000);
-    }
+    });
 
     await syncDatabase(logger, prisma, c, guild);
   },

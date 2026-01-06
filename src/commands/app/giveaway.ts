@@ -1,5 +1,7 @@
+import { checkIfSystemEnabled, getEnableCommand, Timestamp } from "#utils";
 import { commandModule, CommandType } from "@sern/handler";
-import { publishConfig, IntegrationContextType } from "@sern/publisher";
+import { IntegrationContextType, publishConfig } from "@sern/publisher";
+import { add } from "date-fns";
 import {
   ActionRowBuilder,
   ApplicationCommandOptionType,
@@ -8,12 +10,11 @@ import {
   ChannelType,
   Colors,
   EmbedBuilder,
+  Guild,
   MessageFlags,
   PermissionsBitField,
   TextChannel,
 } from "discord.js";
-import { add } from "date-fns";
-import { checkIfSystemEnabled, getEnableCommand, Timestamp } from "#utils";
 
 export default commandModule({
   type: CommandType.Slash,
@@ -94,9 +95,13 @@ export default commandModule({
       deps["@sern/client"],
       deps["@sern/logger"],
     ];
+    const guild = ctx.guild as Guild;
+    if (!guild) {
+      return ctx.reply("This command can only be used in a guild.");
+    }
     const isSystemEnabled = await checkIfSystemEnabled(
       prisma.systems,
-      ctx.guild?.id!,
+      guild.id,
       "giveaways",
     );
     if (!isSystemEnabled) {
@@ -108,7 +113,7 @@ export default commandModule({
     const giveaway = new Giveaway(true);
     const channelId = isSystemEnabled.systems.find(
       (sys) => sys.name === "giveaways",
-    )?.channels[0].id!;
+    )!.channels[0].id;
     const subcommand = ctx.options.getSubcommand();
 
     const subcommands = {
@@ -121,11 +126,6 @@ export default commandModule({
         const timeLeftString = ctx.options.getString("time", true);
 
         // 🔽🔽🔽🔽 This portion came from sern community and hereby giving credit to all authors of such functions
-        let timeUnit1;
-        let timeLeft1;
-        let timeUnit2;
-        let timeLeft2;
-
         const secondNames = ["seconds", "second", "sec", "secs"];
         const minuteNames = ["minutes", "minute", "min", "mins"];
         const hourNames = ["hours", "hour", "hr", "hrs"];
@@ -141,8 +141,10 @@ export default commandModule({
             "Invalid time format. Using `and` more than once is invalid and won't be used. Valid formats: `1 sec | secs | second | seconds`, `1 min | mins | minute | minutes`, `1 hour | hours | hr | hrs`, `1 day | days`, `1 hour and 30 mins`, `2 days and 3 hours`",
           );
         }
-        timeUnit1 = part1?.split(" ")[1];
-        timeLeft1 = Number(part1?.split(" ")[0]);
+        const timeUnit1 = part1?.split(" ")[1];
+        const timeLeft1 = Number(part1?.split(" ")[0]);
+        let timeUnit2;
+        let timeLeft2;
 
         if (part2) {
           const timeLeftStringPart2 = part2.replace(part2.substring(0, 1), "");
@@ -152,9 +154,7 @@ export default commandModule({
 
         const startTime = new Date();
 
-        let endTime: Date;
-
-        endTime = add(startTime, {
+        const endTime: Date = add(startTime, {
           seconds: secondNames.includes(timeUnit1!)
             ? timeLeft1
             : secondNames.includes(timeUnit2!)
@@ -241,7 +241,7 @@ export default commandModule({
                 data: {
                   prize,
                   winnerSize: winners,
-                  guildId: ctx.guild?.id!,
+                  guildId: guild.id,
                   channelId: msg.channel.id,
                   messageId: msg.id,
                   endsAt: endTime,
@@ -249,12 +249,12 @@ export default commandModule({
                 },
               })
               .then(async (d) => {
-                let intTime = d.endsAt.getTime() - startTime.getTime();
+                const intTime = d.endsAt.getTime() - startTime.getTime();
                 await prisma.giveaway.update({
                   where: { id: d.id },
                   data: { interval: intTime },
                 });
-                await giveaway.createTimers(intTime, false, {
+                await giveaway.createTimers(intTime, {
                   channelId: msg.channelId,
                   host: ctx.user.id,
                   messageId: msg.id,
@@ -275,7 +275,7 @@ export default commandModule({
         }
         const giveaways = await prisma.giveaway.findMany({
           where: {
-            guildId: ctx.guild.id,
+            guildId: guild.id,
           },
         });
         if (!giveaways.length) {

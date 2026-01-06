@@ -1,10 +1,10 @@
-import { eventModule, EventType, Services } from "@sern/handler";
+import { eventModule, EventType, Service } from "@sern/handler";
 
 export default eventModule({
   type: EventType.External,
   emitter: "process",
   execute(r) {
-    const [l, c] = Services("@sern/logger", "@sern/client");
+    const l = Service("@sern/logger");
     l.error(r);
   },
 });

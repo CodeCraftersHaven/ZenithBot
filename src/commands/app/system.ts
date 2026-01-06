@@ -1,12 +1,13 @@
+import { capFirstLetter } from "#utils";
 import { commandModule, CommandType } from "@sern/handler";
+import { IntegrationContextType, publishConfig } from "@sern/publisher";
 import {
   ApplicationCommandOptionType,
   ChannelType,
+  Guild,
   PermissionsBitField,
   TextChannel,
 } from "discord.js";
-import { IntegrationContextType, publishConfig } from "@sern/publisher";
-import { capFirstLetter } from "#utils";
 
 export default commandModule({
   type: CommandType.Slash,
@@ -35,7 +36,7 @@ export default commandModule({
               const [system] = [deps["@prisma/client"].systems];
               const focusedOption = ctx.options.getFocused().toLowerCase();
               const systemResult = await system.findFirst({
-                where: { id: ctx.guild?.id! },
+                where: { id: ctx.guild!.id },
                 select: { systems: true },
               });
               if (!systemResult) {
@@ -78,7 +79,7 @@ export default commandModule({
               const [system] = [deps["@prisma/client"].systems];
               const focusedOption = ctx.options.getFocused().toLowerCase();
               const systemResult = await system.findFirst({
-                where: { id: ctx.guild?.id! },
+                where: { id: ctx.guild!.id },
                 select: { systems: true },
               });
               if (!systemResult) {
@@ -115,7 +116,7 @@ export default commandModule({
               const [system] = [deps["@prisma/client"].systems];
               const focusedOption = ctx.options.getFocused().toLowerCase();
               const systemResult = await system.findFirst({
-                where: { id: ctx.guild?.id! },
+                where: { id: ctx.guild!.id },
                 select: { systems: true },
               });
               if (!systemResult) {
@@ -159,7 +160,7 @@ export default commandModule({
               const focusedOption = ctx.options.getFocused().toLowerCase();
               const systemResult = await system.findFirst({
                 where: {
-                  id: ctx.guild?.id!,
+                  id: ctx.guild!.id,
                   systems: { some: { enabled: true } },
                 },
               });
@@ -189,7 +190,7 @@ export default commandModule({
               const [system] = [deps["@prisma/client"].systems];
               const focusedOption = ctx.options.getFocused().toLowerCase();
               const systemResult = await system.findFirst({
-                where: { id: ctx.guild?.id! },
+                where: { id: ctx.guild!.id },
               });
               if (!systemResult) {
                 return ctx.respond([]);
@@ -213,7 +214,10 @@ export default commandModule({
     },
   ],
   async execute(ctx, { deps }) {
-    const { guildId } = ctx;
+    const guildId = ctx.guildId,
+      guild = ctx.guild as Guild;
+    if (!guild) return;
+
     const [db, sys] = [deps["@prisma/client"], deps["systems"].Systems];
     const enabled = await db.systems.findFirst({
       where: { id: guildId! },
@@ -225,11 +229,8 @@ export default commandModule({
       enable: async () => {
         const system = ctx.options.getString("system", true);
         const channel = ctx.options.getChannel("channel", true) as TextChannel;
-        const Systems = new sys(guildId!, ctx.guild?.name!, system, channel);
-        if (
-          system === "selfroles" &&
-          ctx.guildId !== process.env.HOME_SERVER_ID!
-        ) {
+        const Systems = new sys(guildId!, guild.name, system, channel);
+        if (system === "selfroles" && guildId !== process.env.HOME_SERVER_ID!) {
           return await ctx.reply(
             "This system is still in development. Please be patient.",
           );
@@ -241,9 +242,9 @@ export default commandModule({
         const system = ctx.options.getString("system", true);
         const Systems = new sys(
           guildId!,
-          ctx.guild?.name!,
+          guild.name,
           system.split("-")[0],
-          ctx.guild?.channels.cache.get(system.split("-")[1]) as TextChannel,
+          guild.channels.cache.get(system.split("-")[1]) as TextChannel,
         );
         if (
           enabled?.systems.some(
@@ -260,7 +261,7 @@ export default commandModule({
       addchannel: async () => {
         const system = ctx.options.getString("system", true);
         const channel = ctx.options.getChannel("channel", true) as TextChannel;
-        const Systems = new sys(guildId!, ctx.guild?.name!, system, channel);
+        const Systems = new sys(guildId!, guild.name, system, channel);
         const res = await Systems.addChannel();
         return await ctx.reply(res);
       },
@@ -269,7 +270,7 @@ export default commandModule({
         const channel = ctx.client.channels.cache.get(
           ctx.options.getString("channel", true),
         ) as TextChannel;
-        const Systems = new sys(guildId!, ctx.guild?.name!, system, channel);
+        const Systems = new sys(guildId!, guild.name, system, channel);
         const res = await Systems.removeChannel();
         return await ctx.reply(res);
       },

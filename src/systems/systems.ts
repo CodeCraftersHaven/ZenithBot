@@ -51,7 +51,7 @@ export default class Systems {
         select: { systems: true },
       });
 
-      let systems = existingData?.systems || [];
+      const systems = existingData?.systems || [];
       const systemIndex = systems.findIndex((s) => s.name === this.system);
       const systemExistsInChannel =
         systemIndex !== -1 &&
@@ -110,11 +110,12 @@ export default class Systems {
         });
 
       return `${capFirstLetter(this.system)} system has been enabled in <#${this.channel.id}>. Please update channel permissions if needed.`;
-    } catch (error: any) {
+    } catch (error) {
+      const e = error as Error;
       return `Failed to update database or send panel(s) to <#${this.channel.id}>. Error: ${
-        error.message == "Missing Permissions"
+        e.message == "Missing Permissions"
           ? "I can't view that channel or send messages in that channel. Please update my roles/permissions to use that channel."
-          : error.message
+          : e.message
       }`;
     }
   }
@@ -154,10 +155,9 @@ export default class Systems {
           try {
             const msg = await this.channel.messages.fetch(message.id);
             if (msg) await msg.delete();
-          } catch (error: any) {
-            logger.warn(
-              `Failed to delete message ${message}: ${error.message}`,
-            );
+          } catch (error) {
+            const e = error as Error;
+            logger.warn(`Failed to delete message ${message.id}: ${e.message}`);
           }
         }
 
@@ -195,9 +195,10 @@ export default class Systems {
       }
 
       return `Disabled panel in <#${this.channel.id}>.`;
-    } catch (error: any) {
-      console.error(error);
-      return `Failed to disable panel. Error: ${error.message}`;
+    } catch (error) {
+      const e = error as Error;
+      console.error(e);
+      return `Failed to disable panel. Error: ${e.message}`;
     }
   }
 
@@ -241,8 +242,9 @@ export default class Systems {
         data: { systems: { set: existingData.systems } },
       });
       return `Added <#${this.channel.id}> to the ${this.system} system.`;
-    } catch (error: any) {
-      return `Failed to add channel. Error: ${error.message}`;
+    } catch (error) {
+      const e = error as Error;
+      return `Failed to add channel. Error: ${e.message}`;
     }
   }
 
@@ -276,10 +278,9 @@ export default class Systems {
           try {
             const msg = await this.channel.messages.fetch(message.id);
             if (msg) await msg.delete();
-          } catch (error: any) {
-            logger.warn(
-              `Failed to delete message ${message.id}: ${error.message}`,
-            );
+          } catch (error) {
+            const e = error as Error;
+            logger.warn(`Failed to delete message ${message.id}: ${e.message}`);
           }
         }
       }
@@ -315,8 +316,9 @@ export default class Systems {
       }
 
       return `Disabled panel in <#${this.channel.id}>.`;
-    } catch (error: any) {
-      return `Failed to remove channel. Error: ${error.message}`;
+    } catch (error) {
+      const e = error as Error;
+      return `Failed to remove channel. Error: ${e.message}`;
     }
   }
 

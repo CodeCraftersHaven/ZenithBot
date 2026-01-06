@@ -1,10 +1,10 @@
-import { AttachmentBuilder, Client, Guild, OAuth2Guild } from "discord.js";
-import * as path from "path";
-import * as fs from "fs/promises";
-import { PrismaClient, Prisma } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { DefaultArgs } from "@prisma/client/runtime/library";
-import { fileURLToPath } from "url";
+import { AttachmentBuilder, Client, Guild, OAuth2Guild } from "discord.js";
 import * as nodefs from "fs";
+import * as fs from "fs/promises";
+import * as path from "path";
+import { fileURLToPath } from "url";
 import { Logger } from "winston";
 
 export type AssetEncoding =
@@ -30,7 +30,7 @@ export async function Asset(opts: {
   p: string;
   name?: never;
   encoding: "json";
-}): Promise<any>;
+}): Promise<string | AttachmentBuilder>;
 export async function Asset(opts: {
   p: string;
   name?: string;
@@ -77,13 +77,15 @@ export const capFirstLetter = (str: string): string => {
 
 export const getEnableCommand = async (c: Client): Promise<string> => {
   const commands = await c.application?.commands.fetch();
-  const cmd = commands?.find((cmd) => cmd.name === "system")!;
+  const cmd = commands?.find((cmd) => cmd.name === "system");
+  if (!cmd) throw new Error("System command not found");
   return cmd.id;
 };
 
 export const getHelpCommand = async (c: Client): Promise<string> => {
   const commands = await c.application?.commands.fetch();
-  const cmd = commands?.find((cmd) => cmd.name === "help")!;
+  const cmd = commands?.find((cmd) => cmd.name === "help");
+  if (!cmd) throw new Error("Help command not found");
   return cmd.id;
 };
 
@@ -181,7 +183,7 @@ export const syncDatabase = async (
   });
   const systemsList = await Promise.all(systems);
   const filteredSystems = systemsList.filter(
-    (f) => f != "index" && f != "Systems",
+    (f) => f !== "index" && f !== "Systems",
   );
 
   let guilds: (OAuth2Guild | Guild)[] = [];
@@ -202,10 +204,10 @@ export const syncDatabase = async (
       filter: { _id: guild.id },
     };
     try {
-      const result: any = await prisma.$runCommandRaw(findCommand);
+      const result = (await prisma.$runCommandRaw(findCommand)) as RawResult;
       if (result.cursor.firstBatch.length > 0) {
         const dbGuildRaw = result.cursor.firstBatch[0];
-        if (dbGuildRaw.name == null) {
+        if (!dbGuildRaw.name) {
           logger.info(`Fixing null or missing name for guild ${guild.id}`);
           await prisma.systems.update({
             where: { id: guild.id },
@@ -223,7 +225,7 @@ export const syncDatabase = async (
     const fileSystemNames = filteredSystems.map((s) => s.toLowerCase());
 
     if (!dbGuild) {
-      let systemsData = fileSystemNames.map((s) => ({
+      const systemsData = fileSystemNames.map((s) => ({
         name: s,
         enabled: false,
         channels: [],
@@ -236,7 +238,8 @@ export const syncDatabase = async (
         },
       });
     } else {
-      const dbSystemNames = dbGuild.systems.map((s) => s.name);
+      const currentSystems = dbGuild.systems;
+      const dbSystemNames = currentSystems.map((s) => s.name);
 
       const systemsToAdd = fileSystemNames.filter(
         (sName) => !dbSystemNames.includes(sName),
@@ -246,7 +249,7 @@ export const syncDatabase = async (
       );
 
       if (systemsToAdd.length > 0 || systemsToRemove.length > 0) {
-        let updatedSystems = dbGuild.systems.filter(
+        const updatedSystems = currentSystems.filter(
           (s) => !systemsToRemove.includes(s.name),
         );
 

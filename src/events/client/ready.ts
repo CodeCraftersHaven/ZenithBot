@@ -1,6 +1,6 @@
+import { syncDatabase } from "#utils";
 import { eventModule, EventType, Services } from "@sern/handler";
 import { Events, TextChannel } from "discord.js";
-import { syncDatabase } from "#utils";
 
 export default eventModule({
   type: EventType.Discord,
@@ -33,7 +33,7 @@ export default eventModule({
             data.channelId,
           )) as TextChannel;
           await channel.messages.fetch(data.messageId);
-          await giveaway.createTimers(timeLeft, true, {
+          await giveaway.createTimers(timeLeft, {
             channelId: data.channelId,
             messageId: data.messageId,
             host: data.host,

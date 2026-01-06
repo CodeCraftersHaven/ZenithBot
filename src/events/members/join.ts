@@ -8,7 +8,7 @@ export default eventModule({
     const [{ Welcome, AutoRole }, prisma, logger] = Services(
       "systems",
       "@prisma/client",
-      "@sern/logger"
+      "@sern/logger",
     );
 
     const welcome_system = await prisma.systems.findFirst({
@@ -21,7 +21,10 @@ export default eventModule({
       select: { systems: { select: { channels: { select: { id: true } } } } },
     });
 
-    if (!welcome_system) return logger.warn(`No welcome system found in ${member.guild.name}(${member.guild.id})`);
+    if (!welcome_system)
+      return logger.warn(
+        `No welcome system found in ${member.guild.name}(${member.guild.id})`,
+      );
 
     for (const { id } of welcome_system.systems.flatMap((s) => s.channels)) {
       const channel = member.guild.channels.cache.get(id) as TextChannel;
@@ -47,7 +50,10 @@ export default eventModule({
       },
     });
 
-    if (!autorole_system) return logger.warn(`No autorole system found in ${member.guild.name}(${member.guild.id})`);
+    if (!autorole_system)
+      return logger.warn(
+        `No autorole system found in ${member.guild.name}(${member.guild.id})`,
+      );
 
     await new AutoRole(true).giveRole(member);
   },

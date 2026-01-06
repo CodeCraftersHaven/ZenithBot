@@ -4,19 +4,13 @@ import {
   Guild,
   MessageFlags,
   RoleSelectMenuBuilder,
-  User,
 } from "discord.js";
 
 export default commandModule({
   type: CommandType.Button,
   execute: async (ctx, { deps, params }) => {
     await ctx.deferReply({ flags: MessageFlags.Ephemeral });
-    const [autorole, db, logger] = [
-      deps["systems"].AutoRole,
-      deps["@prisma/client"],
-      deps["@sern/logger"],
-    ];
-    const user = ctx.user as User;
+    const [autorole] = [deps["systems"].AutoRole];
     const guild = ctx.guild as Guild;
 
     const act = params! as "update" | "check";

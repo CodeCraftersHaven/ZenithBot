@@ -9,7 +9,6 @@ const validSystems = [
   "tickets",
   "welcome",
 ] as const;
-type SystemKey = (typeof validSystems)[number];
 
 export default commandModule({
   type: CommandType.Modal,

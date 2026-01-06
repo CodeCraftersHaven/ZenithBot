@@ -1,15 +1,16 @@
 import { commandModule, CommandType } from "@sern/handler";
 import {
-  TextChannel,
-  ChannelType,
-  MessageFlags,
+  ActionRowBuilder,
+  APIEmbedField,
   ButtonBuilder,
   ButtonStyle,
-  ActionRowBuilder,
-  Message,
+  ChannelType,
   Embed,
-  APIEmbedField,
   EmbedBuilder,
+  Guild,
+  Message,
+  MessageFlags,
+  TextChannel,
 } from "discord.js";
 
 let clickedUsers: string[] = [];
@@ -17,6 +18,10 @@ let clickedUsers: string[] = [];
 export default commandModule({
   type: CommandType.Button,
   async execute(ctx, { deps, params }) {
+    const guild = ctx.guild as Guild;
+    if (!guild) {
+      return;
+    }
     const act = params! as
       | "claim"
       | "close"
@@ -74,10 +79,10 @@ export default commandModule({
         const winnerId = ctx.user.id;
         const currentChannel = ctx.channel as TextChannel;
         const newChannel = async (): Promise<TextChannel> => {
-          return (await ctx.guild?.channels.create({
+          return (await guild.channels.create({
             name: ctx.user.displayName + "-claim",
             permissionOverwrites: [
-              { id: ctx.guild.roles.everyone, deny: "ViewChannel" },
+              { id: guild.roles.everyone, deny: "ViewChannel" },
               { id: host, allow: ["ViewChannel", "SendMessages"] },
               { id: winnerId, allow: ["ViewChannel", "SendMessages"] },
               {
@@ -104,7 +109,7 @@ export default commandModule({
           }
           await newChannel().then(async (c) => {
             const rep = await currentChannel.send({
-              content: `<@${winnerId}> Here's your claim channel: <#${c?.id}>`,
+              content: `<@${winnerId}> Here's your claim channel: <#${c.id}>`,
             });
             const close = new ButtonBuilder({
               custom_id: "giveaways/close",
@@ -114,7 +119,7 @@ export default commandModule({
             const row = new ActionRowBuilder<ButtonBuilder>({
               components: [close],
             });
-            c?.send({
+            c.send({
               content: `<@${host}>, <@${winnerId}> is here to claim their prize (${prize})! When the claim process is complete, please click "Close Channel" below to delete this channel!`,
               components: [row],
             });
@@ -126,7 +131,7 @@ export default commandModule({
               max: 1,
             }); // 24 hours
 
-            collector.on("collect", async (message) => {
+            collector.on("collect", async () => {
               await rep.delete();
             });
 
@@ -134,28 +139,26 @@ export default commandModule({
               if (collected.size === 0) {
                 c.send(
                   `<@${winnerId}> did not send any messages in the claim channel for 24 hours.`,
-                ).catch((_) => {});
+                ).catch(() => {});
 
-                try {
-                  await p.delete({ where: { messageId: giveawayMessage.id } });
-                } catch (_) {
-                  l.error("Document already deleted.");
-                }
+                await p
+                  .delete({ where: { messageId: giveawayMessage.id } })
+                  .catch(() => {
+                    l.error("Document already deleted.");
+                  });
               }
             });
           });
         }
       },
       close: async () => {
-        try {
-          const channel = await ctx.client.channels.fetch(ctx.channel?.id!);
-          await channel?.delete("claim process completed");
-        } catch (_) {
-          l.error("Channel deleted before collector ends");
-        }
+        const channel = await ctx.client.channels.fetch(ctx.channel!.id);
+        await channel
+          ?.delete("claim process completed")
+          .catch(() => l.error("Channel deleted before collector ends"));
       },
       enter: async () => {
-        const hostUserId = giveawayMessage.embeds[0].footer?.text;
+        const hostUserId = giveawayMessage.embeds[0].footer!.text;
 
         if (ctx.user.id === hostUserId) {
           return ctx.editReply({
@@ -176,7 +179,7 @@ export default commandModule({
         await ctx.editReply({ content: `Giveaway entry achknowleged!` });
       },
       leave: async () => {
-        const hostUserId = giveawayMessage.embeds[0].footer?.text;
+        const hostUserId = giveawayMessage.embeds[0].footer!.text;
 
         if (ctx.user.id === hostUserId) {
           return ctx.editReply({
@@ -198,9 +201,9 @@ export default commandModule({
       },
       end: async () => {
         await g.deleteGiveaway(giveawayMessage.id, ctx.user.id);
-        let ending = findFields(" ");
-        let winners = findFields("winners");
-        let newEmbed = new EmbedBuilder(
+        const ending = findFields(" ");
+        const winners = findFields("winners");
+        const newEmbed = new EmbedBuilder(
           EmbedBuilder.from(giveawayMessage.embeds[0]).toJSON(),
         );
         const newFields = giveawayMessage.embeds[0].fields.filter(

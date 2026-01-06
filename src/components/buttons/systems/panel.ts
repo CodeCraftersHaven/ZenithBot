@@ -1,3 +1,4 @@
+import { getSystemFromMessage } from "#utils";
 import { commandModule, CommandType } from "@sern/handler";
 import {
   ActionRowBuilder,
@@ -10,7 +11,6 @@ import {
   TextInputBuilder,
   TextInputStyle,
 } from "discord.js";
-import { getSystemFromMessage } from "#utils";
 
 let system: string;
 
@@ -59,7 +59,7 @@ export default commandModule({
     const acts = {
       delete: async () => {
         await ctx.deferReply({ flags: MessageFlags.Ephemeral });
-        if (!ctx.memberPermissions?.has("ManageGuild")) {
+        if (!ctx.memberPermissions!.has("ManageGuild")) {
           return await ctx.editReply("You can't delete this message.");
         }
 
@@ -69,8 +69,8 @@ export default commandModule({
         system = sysName;
 
         const Systems = new sys(
-          ctx.guild?.id!,
-          ctx.guild?.name!,
+          ctx.guild!.id,
+          ctx.guild!.name,
           system,
           ctx.channel as TextChannel,
         );
@@ -118,7 +118,7 @@ export default commandModule({
           currentSystemFeedback.users.push({
             userId: ctx.user.id,
             userName: ctx.user.displayName,
-            guildId: ctx.guild?.id!,
+            guildId: ctx.guild!.id,
             feeling: "like",
             comment: "",
           });
@@ -172,7 +172,7 @@ export default commandModule({
           currentSystemFeedback.users.push({
             userId: ctx.user.id,
             userName: ctx.user.displayName,
-            guildId: ctx.guild?.id!,
+            guildId: ctx.guild!.id,
             feeling: "dislike",
             comment: "",
           });
