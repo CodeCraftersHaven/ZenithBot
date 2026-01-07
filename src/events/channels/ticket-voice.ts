@@ -22,6 +22,6 @@ export default eventModule({
       } catch (e) {
         logger.error(e);
       }
-    }, 10000);
+    }, 60000);
   },
 });
