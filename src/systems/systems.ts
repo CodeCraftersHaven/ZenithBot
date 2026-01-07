@@ -352,7 +352,7 @@ export default class Systems {
     const ticketEmbed = new EmbedBuilder()
       .setTitle("Tickets")
       .setDescription(
-        "Click 📩 to open a ticket\nClick ✅ to check your ticket status\nClick 🛡️ to set the staff role",
+        "Click 📩 to open a ticket\n\nClick ✅ to check your ticket status\n\nClick 🛡️ to set the staff role",
       )
       .setColor("Random")
       .setFooter({
