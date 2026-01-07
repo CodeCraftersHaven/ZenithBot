@@ -351,8 +351,13 @@ export default class Systems {
 
     const ticketEmbed = new EmbedBuilder()
       .setTitle("Tickets")
-      .setDescription("Click 📩 to open a ticket")
-      .setColor("Random");
+      .setDescription(
+        "Click 📩 to open a ticket\nClick ✅ to check your ticket status\nClick 🛡️ to set the staff role",
+      )
+      .setColor("Random")
+      .setFooter({
+        text: "📛 If Staff Role isn't set, tickets won't be created. 📛",
+      });
 
     const ticketButtons = ["📩|Open", "✅|Check", "🛡️|Staff"].map((button) => {
       const [emoji, name] = button.split("|");
