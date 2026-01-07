@@ -30,7 +30,10 @@ export default commandModule({
       | "add-user"
       | "remove-user"
       | "staff"
-      | "claim-ticket";
+      | "claim-ticket"
+      | "request-voice"
+      | "accept-voice"
+      | "deny-voice";
 
     const buttons = [
       "🔒|Close",
@@ -38,6 +41,9 @@ export default commandModule({
       "➖|Remove-User",
       "🛡️|Staff-Role",
       "🛄|Claim-Ticket",
+      "🔊|Request-Voice",
+      "👍|Accept-Voice",
+      "👎|Deny-Voice",
     ].map((button) => {
       const [emoji, name] = button.split("|");
       return new ButtonBuilder({
@@ -53,6 +59,12 @@ export default commandModule({
     });
     const claimRow = new ActionRowBuilder<ButtonBuilder>({
       components: [buttons[4]],
+    });
+    const voiceRow = new ActionRowBuilder<ButtonBuilder>({
+      components: [buttons[5]],
+    });
+    const yayORnay = new ActionRowBuilder<ButtonBuilder>({
+      components: [buttons[6], buttons[7]],
     });
 
     const channel = ctx.message.channel as TextChannel;
@@ -77,7 +89,7 @@ export default commandModule({
         )?.staffId;
         if (!staffId) {
           return ctx.editReply(
-            "No staff role configured for this ticket system.",
+            "No staff role configured for this ticket system. This is required to use this system.",
           );
         }
 
@@ -98,6 +110,10 @@ export default commandModule({
         await newThread.send({
           content: `<@&${staffId}>, Please claim the ticket by clicking the button below. This will remove everyone else from the ticket.`,
           components: [claimRow],
+        });
+        await newThread.send({
+          content: `🔊 User request voice channel support`,
+          components: [voiceRow],
         });
         return ctx.editReply(
           `Ticket opened in <#${(newThread as PrivateThreadChannel).id}>`,
@@ -233,7 +249,7 @@ export default commandModule({
 
         if (!staffRoleId) {
           return ctx.editReply(
-            "No staff role configured for this ticket system.",
+            "No staff role configured for this ticket system. This is required to use this system.",
           );
         }
 
@@ -263,6 +279,114 @@ export default commandModule({
         return ctx.editReply({
           content: `You have claimed this ticket. All other staff members have been removed.`,
         });
+      },
+      "request-voice": async () => {
+        const existing = await findSystem(prisma.systems, guild.id, "tickets");
+        const staffId = existing?.channels.find(
+          (c) => c.id === channel.parentId,
+        )?.staffId;
+
+        if (!staffId) {
+          return ctx.editReply(
+            "No staff role configured for this ticket system. This is required to use this system.",
+          );
+        }
+
+        const staffRole = guild.roles.cache.get(staffId);
+        if (!staffRole) {
+          return ctx.editReply("The configured staff role no longer exists.");
+        }
+
+        const membersInThread = await thread.members.fetch();
+        const staffMembersInThread = membersInThread.filter((member) =>
+          member.guildMember?.roles.cache.has(staffId),
+        );
+
+        if (staffMembersInThread.size === 0) {
+          return ctx.editReply(
+            "There are no staff members in this ticket to notify.",
+          );
+        }
+
+        const staffMentions = staffMembersInThread
+          .map((member) => `<@${member.id}>`)
+          .join(", ");
+
+        await thread.send({
+          content: `${staffMentions}, the user <@${user.id}> has requested to join a voice channel. Please accept or deny their request.`,
+          components: [yayORnay],
+        });
+
+        return ctx.deleteReply();
+      },
+      "accept-voice": async () => {
+        if (id === ctx.user.id)
+          return ctx.editReply("You cannot accept your own request.");
+        const managedRole = guild.roles.cache.find(
+          (role) => role.managed && role.name === "customs",
+        );
+
+        const voiceChannel = await guild.channels.create({
+          name: `ticket-voice-${id}`,
+          type: ChannelType.GuildVoice,
+          parent: thread.parent?.parent?.id,
+          permissionOverwrites: [
+            {
+              id: managedRole!.id,
+              allow: [
+                PermissionsBitField.Flags.ViewChannel,
+                PermissionsBitField.Flags.ManageChannels,
+                PermissionsBitField.Flags.ManageGuild,
+              ],
+            },
+            {
+              id: guild.id,
+              deny: [
+                PermissionsBitField.Flags.Connect,
+                PermissionsBitField.Flags.ViewChannel,
+                PermissionsBitField.Flags.Speak,
+              ],
+            },
+            {
+              id: id,
+              allow: [
+                PermissionsBitField.Flags.Connect,
+                PermissionsBitField.Flags.ViewChannel,
+                PermissionsBitField.Flags.Speak,
+              ],
+            },
+            {
+              id: ctx.user.id,
+              allow: [
+                PermissionsBitField.Flags.Connect,
+                PermissionsBitField.Flags.ViewChannel,
+                PermissionsBitField.Flags.Speak,
+              ],
+            },
+            {
+              id: ctx.client.user.id,
+              allow: [
+                PermissionsBitField.Flags.ViewChannel,
+                PermissionsBitField.Flags.ManageChannels,
+                PermissionsBitField.Flags.ManageGuild,
+              ],
+            },
+          ],
+        });
+
+        await thread.send({
+          content: `<@${id}>, <@${ctx.user.id}> your voice channel has been created -> ${voiceChannel} <-
+          Join within a minute.`,
+        });
+        return ctx.deleteReply();
+      },
+      "deny-voice": async () => {
+        if (id === ctx.user.id)
+          return ctx.editReply("You cannot deny your own request.");
+        await thread.send({
+          content: `<@${id}>, your request for voice channel support has been denied.`,
+        });
+        return ctx.deleteReply();
       },
       default: () => {},
     };
