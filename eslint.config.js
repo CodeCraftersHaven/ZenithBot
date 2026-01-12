@@ -8,10 +8,7 @@ export default [
       "node_modules",
       ".sern",
       "prisma",
-      "src/plugins", // prevent eslint from removing nochecks
-      //⬇️Temporary until self role system is complete⬇️
-      "src/systems/selfRoles.ts",
-      "src/components/buttons/selfRoles/self-role.ts",
+      "src/plugins",
     ],
   },
 
