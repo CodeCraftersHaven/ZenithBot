@@ -25,7 +25,7 @@ Please have Node.js, a bot from Discord Developers Page, and [optionally] Docker
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/yourusername/ZenithBot.git
+   git clone https://github.com/CodeCraftersHaven/ZenithBot
    ```
 
 2. Navigate to the project directory:
