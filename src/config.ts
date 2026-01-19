@@ -36,8 +36,8 @@ export const languages = [
   { label: "Ukrainian", value: "uk" },
   { label: "Hindi", value: "hi" },
   { label: "Thai", value: "th" },
-  { label: "Chinese (Simplified)", value: "zh-CN" },
-  { label: "Chinese (Traditional)", value: "zh-TW" },
+  { label: "Chinese (Simplified)", value: "zh-Hans" },
+  { label: "Chinese (Traditional)", value: "zh-Hant" },
   { label: "Japanese", value: "ja" },
   { label: "Korean", value: "ko" },
 ];
