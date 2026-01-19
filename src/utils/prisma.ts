@@ -1,10 +1,17 @@
+import { handlePrismaError, logger } from "#utils";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
-import { logger, handlePrismaError } from "#utils";
 import { exec } from "child_process";
+
+const connectionString = `${process.env.DATABASE_URL}`;
+// eslint-disable-next-line
+const adapter = new PrismaPg({ connectionString });
 
 class Prisma extends PrismaClient {
   constructor() {
-    super();
+    super({
+      // adapter -- save for prisma update -- not yet available.
+    });
   }
 
   override async $disconnect() {
