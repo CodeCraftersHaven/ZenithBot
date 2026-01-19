@@ -82,9 +82,8 @@ Once the bot is running, you can interact with it using the following commands:
 - **Counting:** `enable the system with /system command and start counting.` - Participate in the counting game.
 - **Welcome:** `enable the system in a channel with /system command` - Sends a greeting to new members.
 - **AutoRole:** `enable the system in a channel with /system command` - Automatically assigns a role to new members.
+- **Translator:** `Automatically enabled, right click message > Apps > Translate` - Translate messages.
 - **Self Roles:** `**coming soon**` - Assign a role to yourself.
-- **Translator:** `**coming soon**` - Translate messages.
-
 
 ## Contributing
 

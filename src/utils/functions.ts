@@ -1,6 +1,15 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import { DefaultArgs } from "@prisma/client/runtime/library";
-import { AttachmentBuilder, Client, Guild, OAuth2Guild } from "discord.js";
+import {
+  AttachmentBuilder,
+  Client,
+  Guild,
+  LabelBuilder,
+  ModalBuilder,
+  OAuth2Guild,
+  TextInputBuilder,
+  TextInputStyle,
+} from "discord.js";
 import * as nodefs from "fs";
 import * as fs from "fs/promises";
 import * as path from "path";
@@ -86,6 +95,16 @@ export const getHelpCommand = async (c: Client): Promise<string> => {
   const commands = await c.application?.commands.fetch();
   const cmd = commands?.find((cmd) => cmd.name === "help");
   if (!cmd) throw new Error("Help command not found");
+  return cmd.id;
+};
+
+export const getCommand = async (
+  c: Client,
+  commandName: string,
+): Promise<string> => {
+  const commands = await c.application?.commands.fetch();
+  const cmd = commands?.find((cmd) => cmd.name === commandName);
+  if (!cmd) throw new Error(`${commandName} command not found`);
   return cmd.id;
 };
 
@@ -297,4 +316,60 @@ export const syncDatabase = async (
       `Synced systems for ${guilds.length} guild${guilds.length === 1 ? "" : "s"}.`,
     );
   }
+};
+
+export const createModal = () => {
+  const modal = new ModalBuilder()
+    .setTitle(`Set up your self role message.`)
+    .setCustomId(`selfrole/cmodal`);
+  const titleBuilder = new TextInputBuilder({
+    custom_id: `selfrole/cmodal/title`,
+    style: TextInputStyle.Short,
+    required: true,
+  });
+  const descriptionBuilder = new TextInputBuilder({
+    custom_id: `selfrole/cmodal/description`,
+    style: TextInputStyle.Paragraph,
+    required: true,
+  });
+  const titleInputLabel = new LabelBuilder()
+    .setLabel("Set the title to your self roles")
+    .setTextInputComponent(titleBuilder);
+  const descriptionInputLabel = new LabelBuilder()
+    .setLabel("Describe the roles for the buttons")
+    .setTextInputComponent(descriptionBuilder);
+
+  modal.addLabelComponents([titleInputLabel, descriptionInputLabel]);
+  return modal;
+};
+
+export const updateModal = (field: string) => {
+  const modal = new ModalBuilder()
+    .setTitle(`Update your self role message.`)
+    .setCustomId(`selfrole/emodal`);
+
+  if (field === "title") {
+    const titleBuilder = new TextInputBuilder({
+      custom_id: `selfrole/emodal/title`,
+      style: TextInputStyle.Short,
+      required: true,
+    });
+    const titleInputLabel = new LabelBuilder()
+      .setLabel("Set the title to your self roles")
+      .setTextInputComponent(titleBuilder);
+    modal.addLabelComponents([titleInputLabel]);
+  }
+  if (field === "description") {
+    const descriptionBuilder = new TextInputBuilder({
+      custom_id: `selfrole/emodal/description`,
+      style: TextInputStyle.Paragraph,
+      required: true,
+    });
+
+    const descriptionInputLabel = new LabelBuilder()
+      .setLabel("Describe the roles for the buttons")
+      .setTextInputComponent(descriptionBuilder);
+    modal.addLabelComponents([descriptionInputLabel]);
+  }
+  return modal;
 };
