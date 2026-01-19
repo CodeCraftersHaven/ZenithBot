@@ -373,3 +373,19 @@ export const updateModal = (field: string) => {
   }
   return modal;
 };
+
+export const languageModal = () => {
+  const modal = new ModalBuilder()
+    .setTitle("Language Selector")
+    .setCustomId("translate/modal");
+  const labelBuilder = new TextInputBuilder({
+    custom_id: "translate/modal/language",
+    style: TextInputStyle.Short,
+    required: true,
+  });
+  const inputLabel = new LabelBuilder()
+    .setLabel("What is your language?")
+    .setTextInputComponent(labelBuilder);
+  modal.addLabelComponents([inputLabel]);
+  return modal;
+};

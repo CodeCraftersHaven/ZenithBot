@@ -1,3 +1,4 @@
+export * from "../config.js";
 export * from "../presence.js";
 export * from "./functions.js";
 export * from "./logger.js";
