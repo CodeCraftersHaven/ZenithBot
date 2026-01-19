@@ -5,6 +5,7 @@ import {
   ApplicationCommandOptionType,
   ChannelType,
   Guild,
+  MessageFlags,
   PermissionsBitField,
   TextChannel,
 } from "discord.js";
@@ -229,6 +230,12 @@ export default commandModule({
       enable: async () => {
         const system = ctx.options.getString("system", true);
         const channel = ctx.options.getChannel("channel", true) as TextChannel;
+        if (!channel.permissionsFor(guild.members.me!)?.has("ManageMessages")) {
+          return ctx.reply({
+            content: `I'm unable to use this channel. Give me permission to send messages or choose another channel.`,
+            flags: MessageFlags.Ephemeral
+          })
+        }
         const Systems = new sys(guildId!, guild.name, system, channel);
         if (system === "selfroles" && guildId !== process.env.HOME_SERVER_ID!) {
           return await ctx.reply(
@@ -261,6 +268,12 @@ export default commandModule({
       addchannel: async () => {
         const system = ctx.options.getString("system", true);
         const channel = ctx.options.getChannel("channel", true) as TextChannel;
+        if (!channel.permissionsFor(guild.members.me!)?.has("ManageMessages")) {
+          return ctx.reply({
+            content: `I'm unable to use this channel. Give me permission to send messages or choose another channel.`,
+            flags: MessageFlags.Ephemeral
+          })
+        }
         const Systems = new sys(guildId!, guild.name, system, channel);
         const res = await Systems.addChannel();
         return await ctx.reply(res);
@@ -270,6 +283,12 @@ export default commandModule({
         const channel = ctx.client.channels.cache.get(
           ctx.options.getString("channel", true),
         ) as TextChannel;
+        if (!channel.permissionsFor(guild.members.me!)?.has("ManageMessages")) {
+          return ctx.reply({
+            content: `I'm unable to use this channel. Give me permission to send messages or choose another channel.`,
+            flags: MessageFlags.Ephemeral
+          })
+        }
         const Systems = new sys(guildId!, guild.name, system, channel);
         const res = await Systems.removeChannel();
         return await ctx.reply(res);
