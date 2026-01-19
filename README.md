@@ -79,8 +79,12 @@ Once the bot is running, you can interact with it using the following commands:
 - **Systems:** `/system enable [system] [channel]` - Enable systems to start using the bot.
 - **Giveaways:** `/giveaway create [prize] [winners] [duration]` - Start a new giveaway.
 - **Tickets:** `Just click the button in the channel you enable the ticket system in.` - Create a new support ticket.
+- **Counting:** `enable the system with /system command and start counting.` - Participate in the counting game.
+- **Welcome:** `enable the system in a channel with /system command` - Sends a greeting to new members.
+- **AutoRole:** `enable the system in a channel with /system command` - Automatically assigns a role to new members.
 - **Self Roles:** `**coming soon**` - Assign a role to yourself.
-- **Counting:** `**coming soon**` - Participate in the counting game.
+- **Translator:** `**coming soon**` - Translate messages.
+
 
 ## Contributing
 
