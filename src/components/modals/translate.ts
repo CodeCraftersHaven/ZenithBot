@@ -1,3 +1,4 @@
+import { languages } from "#utils";
 import { commandModule, CommandType } from "@sern/handler";
 import { MessageFlags } from "discord.js";
 
@@ -10,6 +11,9 @@ export default commandModule({
     const owner = await ctx.client.users.fetch(botOwnerId!);
     const dmChannel = await owner.createDM(true);
 
+    if (languages.find((l) => l.label.toLowerCase() === lang.toLowerCase())) {
+        return await ctx.editReply(`${lang} is already in the list.`);
+    }
     dmChannel.send(`${ctx.user.username} needs ${lang} added.`).catch(() => {
       logger.error(
         `owner has dms blocked.\n\n Please add ${lang} to translator config.`,

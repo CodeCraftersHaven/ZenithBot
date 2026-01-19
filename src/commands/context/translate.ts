@@ -34,7 +34,7 @@ export default commandModule({
       return ctx.editReply(notAMessage);
     }
 
-    const hint = `-# Click this button if translation seems bad for your language.`;
+    const hint = `-# Click the button below if this didn't translate to your language.`;
     let replyContent = "";
 
     if (message.content) {
@@ -95,8 +95,8 @@ export default commandModule({
     }
 
     const button = new ButtonBuilder()
-      .setCustomId("translate/bad")
-      .setLabel(await translateText("Bad translation", defaultLang.value))
+      .setCustomId("translate/newlang")
+      .setLabel(await translateText("Unknown language", defaultLang.value))
       .setStyle(ButtonStyle.Danger);
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(button);
