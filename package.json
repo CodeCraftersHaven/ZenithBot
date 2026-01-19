@@ -23,6 +23,7 @@
     "discord.js"
   ],
   "dependencies": {
+    "@google-cloud/translate": "^9.3.0",
     "@prisma/adapter-pg": "^7.2.0",
     "@prisma/client": "^6.19.0",
     "@sern/handler": "^4.2.6",
