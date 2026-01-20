@@ -18,6 +18,18 @@ datasource db {
 }
 
 //-------------------------------
+//-------PREMIUM SETUP-----------
+//-------------------------------
+
+model GuildConfig {
+  id             String   @id @map("_id")
+  welcomeStyle   String   @default("default")
+  embed          Boolean  @default(false)
+  customImageUrl String?
+  updatedAt      DateTime @updatedAt
+}
+
+//-------------------------------
 //------GIVEAWAY SYSTEM----------
 //-------------------------------
 
@@ -70,9 +82,11 @@ model SelfRoles {
 }
 
 type Message {
-  id    String
-  title String
-  roles Role[]
+  id          String
+  channelId   String
+  title       String
+  description String
+  roles       Role[]
 }
 
 type Role {

@@ -1,6 +1,18 @@
 import { findSystem } from "#utils";
 import { eventModule, EventType, Services } from "@sern/handler";
-import { EmbedBuilder, Events, TextChannel } from "discord.js";
+import { EmbedBuilder, Events, Routes, TextChannel } from "discord.js";
+import fs from "fs";
+import path from "path";
+
+const GUILD_SKU_ID = "1463215932045262939";
+
+const PRESETS: Record<string, string> = {
+  main: "main.png",
+  Sunset: "Sunset.png",
+  Neon: "Neon.png",
+  Forest: "Forest.png",
+  Cyberpunk: "Cyberpunk.png",
+};
 
 export default eventModule({
   type: EventType.Discord,
@@ -19,36 +31,89 @@ export default eventModule({
       member.guild.id,
       "welcome",
     );
+
+    const guildConfig = await prisma.guildConfig.findUnique({
+      where: { id: member.guild.id },
+    });
+
     const autorole_system = await findSystem(
       prisma.systems,
       member.guild.id,
       "autorole",
     );
 
-    if (!welcome_system)
-      return logger.warn(
+    if (!welcome_system) {
+      logger.warn(
         `No welcome system found in ${member.guild.name}(${member.guild.id})`,
       );
+    } else {
+      const assetsDir = path.join(process.cwd(), "assets");
+      let backgroundPath = path.join(assetsDir, "main.png");
 
-    for (const { id } of welcome_system.channels.flatMap((s) => s)) {
-      const channel = member.guild.channels.cache.get(id) as TextChannel;
-      if (!channel) continue;
+      if (guildConfig) {
+        const { welcomeStyle, customImageUrl } = guildConfig;
 
-      const image = await new Welcome(true).generateWelcomeMessage(member);
+        let hasPremium = false;
+        try {
+          const appId = member.client.application?.id;
 
-      const embed = new EmbedBuilder()
-        .setTitle(`🎉 Welcome, ${member.user.username}!`)
-        .setDescription(`We're glad to have you in ${member.guild.name}!`)
-        .setImage("attachment://welcome.png")
-        .setColor("Random");
+          if (appId) {
+            const rawEntitlements = (await member.client.rest.get(
+              Routes.entitlements(appId),
+              {
+                query: new URLSearchParams({
+                  guild_id: member.guild.id,
+                  exclude_ended: "true",
+                }),
+              },
+            )) as Array<{ sku_id: string }>;
 
-      channel.send({ embeds: [embed], files: [image] });
+            hasPremium = rawEntitlements.some((e) => e.sku_id === GUILD_SKU_ID);
+          }
+        } catch (error) {
+          logger.error(`Failed to fetch entitlements via REST: ${error}`);
+        }
+        if (welcomeStyle === "custom" && hasPremium && customImageUrl) {
+          if (fs.existsSync(customImageUrl)) {
+            backgroundPath = customImageUrl;
+          }
+        }
+        else if (PRESETS[welcomeStyle]) {
+          backgroundPath = path.join(assetsDir, PRESETS[welcomeStyle]);
+        }
+      }
+
+      for (const { id } of welcome_system.channels.flatMap((s) => s)) {
+        const channel = member.guild.channels.cache.get(id) as TextChannel;
+        if (!channel) continue;
+
+        const image = await new Welcome(true).generateWelcomeMessage(
+          member,
+          backgroundPath,
+        );
+
+        if (guildConfig?.embed) {
+          const embed = new EmbedBuilder()
+            .setTitle(`🎉 Welcome, ${member.user.username}!`)
+            .setDescription(`We're glad to have you in ${member.guild.name}!`)
+            .setImage("attachment://welcome.png")
+            .setColor("Random");
+
+          await channel.send({ embeds: [embed], files: [image] });
+        } else {
+          await channel.send({
+            content: `🎉 Welcome, ${member.user.username}!\nWe're glad to have you in ${member.guild.name}!`,
+            files: [image],
+          });
+        }
+      }
     }
 
-    if (!autorole_system)
+    if (!autorole_system) {
       return logger.warn(
         `No autorole system found in ${member.guild.name}(${member.guild.id})`,
       );
+    }
 
     await new AutoRole(true).giveRole(member);
   },

@@ -11,9 +11,9 @@ RUN npm install
 COPY src /zenith/src
 COPY prisma /zenith/prisma
 COPY assets /zenith/assets
+COPY uploads /zenith/uploads
 
 RUN npx prisma generate
-# RUN npx prisma db push
 
 RUN sern build
 
