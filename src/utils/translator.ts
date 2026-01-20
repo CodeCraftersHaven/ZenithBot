@@ -1,6 +1,6 @@
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
-import { autocorrectText } from "./autocorrect.js";
+import { autocorrectText } from ".";
 
 const endpoint = "https://api.cognitive.microsofttranslator.com";
 const location = process.env.AZURE_TRANSLATOR_REGION || "global";
