@@ -102,7 +102,7 @@ export default eventModule({
           await channel.send({ embeds: [embed], files: [image] });
         } else {
           await channel.send({
-            content: `🎉 Welcome, ${member.user.username}!\nWe're glad to have you in ${member.guild.name}!`,
+            content: `🎉 Welcome, ${member.user}!\nWe're glad to have you in ${member.guild.name}!`,
             files: [image],
           });
         }
