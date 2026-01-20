@@ -1,5 +1,6 @@
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
+import { autocorrectText } from "./autocorrect.js";
 
 const endpoint = "https://api.cognitive.microsofttranslator.com";
 const location = process.env.AZURE_TRANSLATOR_REGION || "global";
@@ -10,6 +11,8 @@ async function translateText(text: string, target: string) {
     console.warn("AZURE_TRANSLATOR_KEY is not set. Returning original text.");
     return text;
   }
+
+  const correctedText = await autocorrectText(text.split("\n")[0]);
 
   try {
     const response = await axios({
@@ -28,7 +31,7 @@ async function translateText(text: string, target: string) {
       },
       data: [
         {
-          text: text,
+          text: correctedText,
         },
       ],
       responseType: "json",
@@ -37,7 +40,7 @@ async function translateText(text: string, target: string) {
     return response.data[0].translations[0].text;
   } catch (error) {
     console.error("Translation error:", error);
-    return text; // Fallback to original text on error
+    return text;
   }
 }
 
