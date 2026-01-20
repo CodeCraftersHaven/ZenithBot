@@ -12,7 +12,7 @@ export default commandModule({
     const dmChannel = await owner.createDM(true);
 
     if (languages.find((l) => l.label.toLowerCase() === lang.toLowerCase())) {
-        return await ctx.editReply(`${lang} is already in the list.`);
+      return await ctx.editReply(`${lang} is already in the list.`);
     }
     dmChannel.send(`${ctx.user.username} needs ${lang} added.`).catch(() => {
       logger.error(

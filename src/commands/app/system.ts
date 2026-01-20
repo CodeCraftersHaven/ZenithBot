@@ -233,8 +233,8 @@ export default commandModule({
         if (!channel.permissionsFor(guild.members.me!)?.has("ManageMessages")) {
           return ctx.reply({
             content: `I'm unable to use this channel. Give me permission to send messages or choose another channel.`,
-            flags: MessageFlags.Ephemeral
-          })
+            flags: MessageFlags.Ephemeral,
+          });
         }
         const Systems = new sys(guildId!, guild.name, system, channel);
         if (system === "selfroles" && guildId !== process.env.HOME_SERVER_ID!) {
@@ -271,8 +271,8 @@ export default commandModule({
         if (!channel.permissionsFor(guild.members.me!)?.has("ManageMessages")) {
           return ctx.reply({
             content: `I'm unable to use this channel. Give me permission to send messages or choose another channel.`,
-            flags: MessageFlags.Ephemeral
-          })
+            flags: MessageFlags.Ephemeral,
+          });
         }
         const Systems = new sys(guildId!, guild.name, system, channel);
         const res = await Systems.addChannel();
@@ -286,8 +286,8 @@ export default commandModule({
         if (!channel.permissionsFor(guild.members.me!)?.has("ManageMessages")) {
           return ctx.reply({
             content: `I'm unable to use this channel. Give me permission to send messages or choose another channel.`,
-            flags: MessageFlags.Ephemeral
-          })
+            flags: MessageFlags.Ephemeral,
+          });
         }
         const Systems = new sys(guildId!, guild.name, system, channel);
         const res = await Systems.removeChannel();
