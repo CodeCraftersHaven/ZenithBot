@@ -4,7 +4,7 @@ import { EmbedBuilder, Events, Routes, TextChannel } from "discord.js";
 import fs from "fs";
 import path from "path";
 
-const GUILD_SKU_ID = "1463215932045262939";
+const GUILD_SKU_ID = process.env.GUILD_SKU_ID!;
 
 const PRESETS: Record<string, string> = {
   main: "main.png",
@@ -12,6 +12,7 @@ const PRESETS: Record<string, string> = {
   Neon: "Neon.png",
   Forest: "Forest.png",
   Cyberpunk: "Cyberpunk.png",
+  PalLink: "PalLink.png",
 };
 
 export default eventModule({
@@ -77,8 +78,7 @@ export default eventModule({
           if (fs.existsSync(customImageUrl)) {
             backgroundPath = customImageUrl;
           }
-        }
-        else if (PRESETS[welcomeStyle]) {
+        } else if (PRESETS[welcomeStyle]) {
           backgroundPath = path.join(assetsDir, PRESETS[welcomeStyle]);
         }
       }

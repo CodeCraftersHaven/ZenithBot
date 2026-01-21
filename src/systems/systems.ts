@@ -13,6 +13,7 @@ import {
 
 export default class Systems {
   private db: PrismaClient = Service("@prisma/client");
+  private c = Service("@sern/client");
   private guildId: string;
   private guildName: string;
   private channel!: TextChannel;
@@ -32,97 +33,85 @@ export default class Systems {
     this.staffId = staffId!;
   }
   async createPanel(): Promise<string> {
-    try {
-      const existingChannel = await this.db.systems.findFirst({
-        where: {
-          id: this.guildId,
-          systems: {
-            some: {
-              enabled: true,
-              channels: { some: { id: this.channel.id } },
-            },
+    const existingChannel = await this.db.systems.findFirst({
+      where: {
+        id: this.guildId,
+        systems: {
+          some: {
+            enabled: true,
+            channels: { some: { id: this.channel.id } },
           },
         },
-      });
+      },
+    });
 
-      if (existingChannel) {
-        return "This channel is already in use.";
-      }
+    if (existingChannel) {
+      return "This channel is already in use.";
+    }
 
-      const existingData = await this.db.systems.findUnique({
-        where: { id: this.guildId },
-        select: { systems: true },
-      });
+    const existingData = await this.db.systems.findUnique({
+      where: { id: this.guildId },
+      select: { systems: true },
+    });
+    const systems = existingData?.systems || [];
+    const systemIndex = systems.findIndex((s) => s.name === this.system);
+    const systemExistsInChannel =
+      systemIndex !== -1 &&
+      systems[systemIndex].channels.some((c) => c.id === this.channel.id);
+    if (systemExistsInChannel) {
+      return "This system is already enabled in this channel.";
+    }
 
-      const systems = existingData?.systems || [];
-      const systemIndex = systems.findIndex((s) => s.name === this.system);
-      const systemExistsInChannel =
-        systemIndex !== -1 &&
-        systems[systemIndex].channels.some((c) => c.id === this.channel.id);
+    const sentMessages = await this.formPanelEmbed();
+    const messageIds = sentMessages.map((msg) => {
+      return { id: msg.id };
+    });
 
-      if (systemExistsInChannel) {
-        return "This system is already enabled in this channel.";
-      }
+    if (systemIndex !== -1) {
+      systems[systemIndex].enabled = true;
+      const channelIndex = systems[systemIndex].channels.findIndex(
+        (c) => c.id === this.channel.id,
+      );
 
-      const sentMessages = await this.formPanelEmbed();
-
-      const messageIds = sentMessages.map((msg) => {
-        return { id: msg.id };
-      });
-
-      if (systemIndex !== -1) {
-        systems[systemIndex].enabled = true;
-        const channelIndex = systems[systemIndex].channels.findIndex(
-          (c) => c.id === this.channel.id,
+      if (channelIndex !== -1) {
+        systems[systemIndex].channels[channelIndex].messages.push(
+          ...messageIds,
         );
-
-        if (channelIndex !== -1) {
-          systems[systemIndex].channels[channelIndex].messages.push(
-            ...messageIds,
-          );
-        } else {
-          systems[systemIndex].channels.push({
+      } else {
+        systems[systemIndex].channels.push({
+          id: this.channel.id,
+          name: this.channel.name,
+          messages: messageIds,
+          staffId: this.staffId || "",
+        });
+      }
+    } else {
+      systems.push({
+        name: this.system,
+        enabled: true,
+        channels: [
+          {
             id: this.channel.id,
             name: this.channel.name,
             messages: messageIds,
             staffId: this.staffId || "",
-          });
-        }
-      } else {
-        systems.push({
-          name: this.system,
-          enabled: true,
-          channels: [
-            {
-              id: this.channel.id,
-              name: this.channel.name,
-              messages: messageIds,
-              staffId: this.staffId || "",
-            },
-          ],
-        });
-      }
-
-      await this.db.systems
-        .update({
-          where: { id: this.guildId },
-          data: { systems: { set: systems } },
-        })
-        .catch(async () => {
-          await this.db.systems.create({
-            data: { id: this.guildId, name: this.guildName, systems: systems },
-          });
-        });
-
-      return `${capFirstLetter(this.system)} system has been enabled in <#${this.channel.id}>. Please update channel permissions if needed.`;
-    } catch (error) {
-      const e = error as Error;
-      return `Failed to update database or send panel(s) to <#${this.channel.id}>. Error: ${
-        e.message == "Missing Permissions"
-          ? "I can't view that channel or send messages in that channel. Please update my roles/permissions to use that channel."
-          : e.message
-      }`;
+          },
+        ],
+      });
     }
+
+    await this.db.systems
+      .update({
+        where: { id: this.guildId },
+        data: { systems: { set: systems } },
+      })
+      .catch(async () => {
+        await this.db.systems.create({
+          data: { id: this.guildId, name: this.guildName, systems: systems },
+        });
+      });
+
+    return `${capFirstLetter(this.system)} system has been enabled in <#${this.channel.id}>. Please update channel permissions if needed.`;
   }
 
   async clearPanel(): Promise<string> {
@@ -250,7 +239,10 @@ export default class Systems {
       return `Added <#${this.channel.id}> to the ${this.system} system.`;
     } catch (error) {
       const e = error as Error;
-      return `Failed to add channel. Error: ${e.message}`;
+      logger.error(
+        `Failed to add channel to ${this.system} in ${this.guildName}(${this.guildId}): ${e.message}`,
+      );
+      return `Failed to add channel. Error: ${e.message === "Missing Permissions" ? "I can't view that channel or send messages in that channel. Please update my roles/permissions to use that channel." : e.message}`;
     }
   }
 
@@ -324,7 +316,10 @@ export default class Systems {
       return `Disabled panel in <#${this.channel.id}>.`;
     } catch (error) {
       const e = error as Error;
-      return `Failed to remove channel. Error: ${e.message}`;
+      logger.error(
+        `Failed to remove channel from ${this.system} in ${this.guildName}(${this.guildId}): ${e.message}`,
+      );
+      return `Failed to remove channel. Error: ${e.message === "Missing Permissions" ? "I can't view that channel or send messages in that channel. Please update my roles/permissions to use that channel." : e.message}`;
     }
   }
 
@@ -392,6 +387,25 @@ export default class Systems {
       ...autoroleButtons,
     );
 
+    const selfRoleEmbed = new EmbedBuilder()
+      .setTitle("Self Roles")
+      .setDescription("Click ⚙️ to set or update the self roles")
+      .setColor("Random");
+
+    const selfRoleButtons = ["⚙️|Update"].map((button) => {
+      const [emoji, name] = button.split("|");
+      return new ButtonBuilder({
+        style: name === "Update" ? ButtonStyle.Primary : ButtonStyle.Success,
+        emoji,
+        label: name,
+        custom_id: `selfrole/${name.toLowerCase()}`,
+      });
+    });
+
+    const selfRoleRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      ...selfRoleButtons,
+    );
+
     const INFO: [
         EmbedBuilder,
         ActionRowBuilder<MessageActionRowComponentBuilder>,
@@ -403,14 +417,20 @@ export default class Systems {
       AUTOROLE: [
         EmbedBuilder,
         ActionRowBuilder<MessageActionRowComponentBuilder>,
-      ] = [autoroleEmbed, autoroleRow];
+      ] = [autoroleEmbed, autoroleRow],
+      SELFROLE: [
+        EmbedBuilder,
+        ActionRowBuilder<MessageActionRowComponentBuilder>,
+      ] = [selfRoleEmbed, selfRoleRow];
 
     const sentMessages =
       this.system === "tickets"
         ? await this.sendMessages(this.channel, INFO, TICKET)
         : this.system === "autorole"
           ? await this.sendMessages(this.channel, INFO, AUTOROLE)
-          : await this.sendMessages(this.channel, INFO);
+          : this.system === "selfroles"
+            ? await this.sendMessages(this.channel, INFO, SELFROLE)
+            : await this.sendMessages(this.channel, INFO);
 
     const messageIds = sentMessages.map((msg) => {
       return { id: msg.id };

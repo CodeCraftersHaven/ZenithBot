@@ -5,9 +5,10 @@ import {
   ApplicationCommandOptionType,
   ButtonBuilder,
   ButtonStyle,
+  MessageFlags,
 } from "discord.js";
 
-const GUILD_SKU_ID = "1463215932045262939";
+const GUILD_SKU_ID = process.env.GUILD_SKU_ID!;
 
 export default commandModule({
   type: CommandType.Slash,
@@ -24,6 +25,7 @@ export default commandModule({
         { name: "Cyberpunk Theme", value: "Cyberpunk" },
         { name: "Forest Theme", value: "Forest" },
         { name: "Neon Theme", value: "Neon" },
+        { name: "PalLink", value: "PalLink" },
         { name: "✨ Custom Image (Premium)", value: "custom" },
       ],
     },
@@ -63,6 +65,12 @@ export default commandModule({
       (e) => e.skuId === GUILD_SKU_ID,
     );
 
+    if (style === "Pallink" && ctx.guild?.id !== "1399150174357422150") {
+      return interaction.reply({
+        content: "🔒 **This style is locked.**",
+        flags: MessageFlags.Ephemeral,
+      });
+    }
     if (style === "custom") {
       if (!hasEntitlement) {
         const premiumBtn = new ButtonBuilder()
