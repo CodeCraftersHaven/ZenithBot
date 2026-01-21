@@ -1,7 +1,6 @@
+import { createCanvas, loadImage } from "canvas";
 import fs from "node:fs";
 import path from "node:path";
-import { Readable } from "node:stream";
-import { finished } from "node:stream/promises";
 
 const UPLOAD_DIR = path.join(process.cwd(), "uploads");
 
@@ -14,16 +13,25 @@ export async function downloadImage(
   }
 
   const response = await fetch(url);
-  if (!response.ok || !response.body)
+  if (!response.ok)
     throw new Error(`Failed to fetch image: ${response.statusText}`);
 
-  const extension = path.extname(new URL(url).pathname) || ".png";
-  const filename = `welcome-${guildId}${extension}`;
+  const arrayBuffer = await response.arrayBuffer();
+  const image = await loadImage(Buffer.from(arrayBuffer));
+
+  const targetWidth = 720;
+  const scaleFactor = targetWidth / image.width;
+  const targetHeight = image.height * scaleFactor;
+
+  const canvas = createCanvas(targetWidth, targetHeight);
+  const ctx = canvas.getContext("2d");
+
+  ctx.drawImage(image, 0, 0, targetWidth, targetHeight);
+
+  const filename = `welcome-${guildId}.png`;
   const filepath = path.join(UPLOAD_DIR, filename);
 
-  const fileStream = fs.createWriteStream(filepath);
-  // @ts-expect-error - native fetch body is a ReadableStream, node stream expects Readable.
-  await finished(Readable.fromWeb(response.body).pipe(fileStream));
+  fs.writeFileSync(filepath, canvas.toBuffer("image/png"));
 
   return filepath;
 }
