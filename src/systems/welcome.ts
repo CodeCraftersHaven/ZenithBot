@@ -48,10 +48,10 @@ export default class Welcome {
     ctx.restore();
 
     // 3. Text Configuration
-    ctx.font = "32px Normal";
-    ctx.fillStyle = "#00ffff";
+    ctx.font = "32px Bold";
+    ctx.fillStyle = "#ffffff";
     ctx.textAlign = "center";
-    ctx.strokeStyle = "#ff00ff";
+    ctx.strokeStyle = "#000000";
     ctx.lineWidth = 4;
 
     const welcomeTextY = avatarY - 40;
