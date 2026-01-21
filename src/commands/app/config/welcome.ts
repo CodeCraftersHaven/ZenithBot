@@ -65,7 +65,7 @@ export default commandModule({
       (e) => e.skuId === GUILD_SKU_ID,
     );
 
-    if (style === "Pallink" && ctx.guild?.id !== "1399150174357422150") {
+    if (style === "PalLink" && ctx.guild?.id !== "1399150174357422150") {
       return interaction.reply({
         content: "🔒 **This style is locked.**",
         flags: MessageFlags.Ephemeral,
