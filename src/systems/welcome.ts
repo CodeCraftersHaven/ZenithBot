@@ -14,11 +14,12 @@ export default class Welcome {
    * @param backgroundPath The absolute path to the background image (preset or custom)
    */
   async generateWelcomeMessage(member: GuildMember, backgroundPath: string) {
-    const canvas = createCanvas(500, 500);
-    const ctx = canvas.getContext("2d");
-
     // 1. Load the dynamic background passed from the event handler
     const background = await loadImage(backgroundPath);
+
+    const canvas = createCanvas(background.width, background.height);
+    const ctx = canvas.getContext("2d");
+
     ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
 
     // 2. Load Avatar
@@ -28,8 +29,8 @@ export default class Welcome {
 
     // Avatar styling variables
     const avatarSize = 125;
-    const avatarX = canvas.width / 2 - avatarSize / 2 + 12;
-    const avatarY = 110;
+    const avatarX = canvas.width / 2 - avatarSize / 2;
+    const avatarY = canvas.height / 2 - avatarSize / 2;
 
     // Draw Circular Avatar
     ctx.save();
@@ -47,14 +48,13 @@ export default class Welcome {
     ctx.restore();
 
     // 3. Text Configuration
-    // Update: Added "Normal" so it actually uses your registered custom font
     ctx.font = "32px Normal";
     ctx.fillStyle = "#00ffff";
     ctx.textAlign = "center";
     ctx.strokeStyle = "#ff00ff";
     ctx.lineWidth = 4;
 
-    const welcomeTextY = avatarY - 50;
+    const welcomeTextY = avatarY - 40;
 
     // Draw "Welcome, {username}!"
     ctx.strokeText(
@@ -69,14 +69,13 @@ export default class Welcome {
     );
 
     // Draw "to {guild.name}"
-    const guildTextY = avatarY + avatarSize + 70;
+    const guildTextY = avatarY + avatarSize + 50;
     ctx.strokeText(`to ${member.guild.name}`, canvas.width / 2, guildTextY);
     ctx.fillText(`to ${member.guild.name}`, canvas.width / 2, guildTextY);
 
     // 4. Member Count Logic
-    // Note: ensure your bot has 'GuildMembers' intent for accurate cache
     ctx.font = "24px Normal";
-    const memberTextY = guildTextY + 90;
+    const memberTextY = guildTextY + 50;
 
     const botCount = member.guild.members.cache.filter((m) => m.user.bot).size;
     const userCount = member.guild.memberCount;
