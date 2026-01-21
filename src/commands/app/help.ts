@@ -34,7 +34,8 @@ export default commandModule({
     const problems = {
       missingperms: async () => {
         const ideas: string[] = [
-          "Give me `Manage Guild` permissions or a role that includes it",
+          "Give me `ViewChannel, SendMessages, EmbedLinks, and AttachFiles` permissions or a role that includes them.",
+          "Ensure the channel permissions allow the same permissions to me",
           "Ensure that you also have `Manage Guild` permissions",
           "Use a channel that I can see and send messages in",
           "Ensure that you have permissions to see and send messages in the channel",
