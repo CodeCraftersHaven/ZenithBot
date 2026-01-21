@@ -230,7 +230,11 @@ export default commandModule({
       enable: async () => {
         const system = ctx.options.getString("system", true);
         const channel = ctx.options.getChannel("channel", true) as TextChannel;
-        if (!channel.permissionsFor(guild.members.me!)?.has("ManageMessages")) {
+        if (
+          !channel
+            .permissionsFor(guild.members.me!)
+            ?.has(["ViewChannel", "SendMessages", "EmbedLinks", "AttachFiles"])
+        ) {
           return ctx.reply({
             content: `I'm unable to use this channel. Give me permission to send messages or choose another channel.`,
             flags: MessageFlags.Ephemeral,
@@ -268,7 +272,11 @@ export default commandModule({
       addchannel: async () => {
         const system = ctx.options.getString("system", true);
         const channel = ctx.options.getChannel("channel", true) as TextChannel;
-        if (!channel.permissionsFor(guild.members.me!)?.has("ManageMessages")) {
+        if (
+          !channel
+            .permissionsFor(guild.members.me!)
+            ?.has(["ViewChannel", "SendMessages", "EmbedLinks", "AttachFiles"])
+        ) {
           return ctx.reply({
             content: `I'm unable to use this channel. Give me permission to send messages or choose another channel.`,
             flags: MessageFlags.Ephemeral,
@@ -283,7 +291,11 @@ export default commandModule({
         const channel = ctx.client.channels.cache.get(
           ctx.options.getString("channel", true),
         ) as TextChannel;
-        if (!channel.permissionsFor(guild.members.me!)?.has("ManageMessages")) {
+        if (
+          !channel
+            .permissionsFor(guild.members.me!)
+            ?.has(["ViewChannel", "SendMessages", "EmbedLinks", "AttachFiles"])
+        ) {
           return ctx.reply({
             content: `I'm unable to use this channel. Give me permission to send messages or choose another channel.`,
             flags: MessageFlags.Ephemeral,
