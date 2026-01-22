@@ -5,7 +5,7 @@ export * from "./functions.js";
 export * from "./logger.js";
 export * from "./prisma.js";
 export * from "./prismaErrors.js";
-export * from "./roadmap.js";
+// export * from "./roadmap.js";
 export * from "./selfconfig.js";
 export * from "./timestamp.js";
 export * from "./translator.js";
