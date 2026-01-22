@@ -41,6 +41,12 @@ export default commandModule({
       type: ApplicationCommandOptionType.Attachment,
       required: false,
     },
+    {
+      name: "display-member-count",
+      description: "whether to display what member number the new member is",
+      type: ApplicationCommandOptionType.Boolean,
+      required: false,
+    }
   ],
   execute: async (ctx, { deps: { "@prisma/client": prisma } }) => {
     const { interaction } = ctx;
@@ -55,6 +61,8 @@ export default commandModule({
     const style = interaction.options.getString("style", true);
     const embed = interaction.options.getBoolean("embed");
     const attachment = interaction.options.getAttachment("image");
+    const displayMemberCount = interaction.options.getBoolean("display-member-count");
+
 
     const existingConfig = await prisma.guildConfig.findUnique({
       where: { id: interaction.guildId! },
@@ -115,11 +123,13 @@ export default commandModule({
             welcomeStyle: style,
             customImageUrl: localPath,
             embed: finalEmbed,
+            displayMemberCount: displayMemberCount ?? true,
           },
           update: {
             welcomeStyle: style,
             customImageUrl: localPath,
             embed: finalEmbed,
+            displayMemberCount: displayMemberCount ?? true,
           },
         });
 
@@ -141,10 +151,12 @@ export default commandModule({
         id: interaction.guildId!,
         welcomeStyle: style,
         embed: finalEmbed,
+        displayMemberCount: displayMemberCount ?? true,
       },
       update: {
         welcomeStyle: style,
         embed: finalEmbed,
+        displayMemberCount: displayMemberCount ?? true,
       },
     });
 

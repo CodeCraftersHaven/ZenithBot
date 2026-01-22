@@ -13,7 +13,7 @@ export default class Welcome {
    * @param member The Discord GuildMember joining
    * @param backgroundPath The absolute path to the background image (preset or custom)
    */
-  async generateWelcomeMessage(member: GuildMember, backgroundPath: string) {
+  async generateWelcomeMessage(member: GuildMember, backgroundPath: string, writeMemberCount: boolean = true) {
     // 1. Load the dynamic background passed from the event handler
     const background = await loadImage(backgroundPath);
 
@@ -73,26 +73,27 @@ export default class Welcome {
     ctx.strokeText(`to ${member.guild.name}`, canvas.width / 2, guildTextY);
     ctx.fillText(`to ${member.guild.name}`, canvas.width / 2, guildTextY);
 
-    // 4. Member Count Logic
-    ctx.font = "24px Normal";
-    const memberTextY = guildTextY + 50;
+    if (writeMemberCount) {
+      // 4. Member Count Logic
+      ctx.font = "24px Normal";
+      const memberTextY = guildTextY + 50;
 
-    const botCount = member.guild.members.cache.filter((m) => m.user.bot).size;
-    const userCount = member.guild.memberCount;
-    const memberCount = userCount - botCount;
+      const botCount = member.guild.members.cache.filter((m) => m.user.bot).size;
+      const userCount = member.guild.memberCount;
+      const memberCount = userCount - botCount;
 
-    // Draw "You are the nth member!"
-    ctx.strokeText(
-      `You are the ${memberCount}${this.getOrdinalSuffix(memberCount)} member!`,
-      canvas.width / 2,
-      memberTextY,
-    );
-    ctx.fillText(
-      `You are the ${memberCount}${this.getOrdinalSuffix(memberCount)} member!`,
-      canvas.width / 2,
-      memberTextY,
-    );
-
+      // Draw "You are the nth member!"
+      ctx.strokeText(
+        `You are the ${memberCount}${this.getOrdinalSuffix(memberCount)} member!`,
+        canvas.width / 2,
+        memberTextY,
+      );
+      ctx.fillText(
+        `You are the ${memberCount}${this.getOrdinalSuffix(memberCount)} member!`,
+        canvas.width / 2,
+        memberTextY,
+      );
+    }
     const attachment = new AttachmentBuilder(canvas.toBuffer(), {
       name: "welcome.png",
     });

@@ -22,11 +22,12 @@ datasource db {
 //-------------------------------
 
 model GuildConfig {
-  id             String   @id @map("_id")
-  welcomeStyle   String   @default("default")
-  embed          Boolean  @default(false)
-  customImageUrl String?
-  updatedAt      DateTime @updatedAt
+  id                 String   @id @map("_id")
+  welcomeStyle       String   @default("default")
+  embed              Boolean  @default(false)
+  customImageUrl     String?
+  displayMemberCount Boolean  @default(true)
+  updatedAt          DateTime @updatedAt
 }
 
 //-------------------------------

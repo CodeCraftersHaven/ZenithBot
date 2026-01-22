@@ -90,6 +90,7 @@ export default eventModule({
         const image = await new Welcome(true).generateWelcomeMessage(
           member,
           backgroundPath,
+          guildConfig?.displayMemberCount ?? true,
         );
 
         if (guildConfig?.embed) {
