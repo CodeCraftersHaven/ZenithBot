@@ -1,4 +1,3 @@
-//@ts-nocheck
 import { CommandControlPlugin, CommandType, controller } from "@sern/handler";
 import {
   ActionRowBuilder,
@@ -8,9 +7,9 @@ import {
   Snowflake,
 } from "discord.js";
 
-export function premiumOnly(skuId: Snowflake) {
-  return CommandControlPlugin<CommandType.Both>(async (ctx) => {
-    const hasEntitlement = ctx.interaction.entitlements.some(
+export function premiumMsgOnly(skuId: Snowflake) {
+  return CommandControlPlugin<CommandType.CtxMsg>(async (ctx) => {
+    const hasEntitlement = ctx.entitlements.some(
       (ent) => ent.skuId === skuId,
     );
 
@@ -32,14 +31,10 @@ export function premiumOnly(skuId: Snowflake) {
       components: [row],
     };
 
-    if (ctx.isSlash()) {
-      await ctx.interaction.reply({
-        ...messagePayload,
-        flags: MessageFlags.Ephemeral,
-      });
-    } else {
-      await ctx.message.reply(messagePayload);
-    }
+    await ctx.reply({
+      ...messagePayload,
+      flags: MessageFlags.Ephemeral,
+    });
 
     return controller.stop();
   });
