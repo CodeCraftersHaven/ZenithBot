@@ -28,8 +28,12 @@ export default commandModule({
   type: CommandType.CtxMsg,
   plugins: [
     publishConfig({
-      contexts: [IntegrationContextType.GUILD],
-      integrationTypes: ["Guild"],
+      contexts: [
+        IntegrationContextType.GUILD,
+        IntegrationContextType.BOT_DM,
+        IntegrationContextType.PRIVATE_CHANNEL,
+      ],
+      integrationTypes: ["Guild", "User"],
     }),
   ],
   description: " ",
