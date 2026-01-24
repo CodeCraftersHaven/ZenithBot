@@ -190,23 +190,31 @@ export default commandModule({
             async execute(ctx, { deps }) {
               const [system] = [deps["@prisma/client"].systems];
               const focusedOption = ctx.options.getFocused().toLowerCase();
+              const selectedSystem = ctx.options.getString("system");
               const systemResult = await system.findFirst({
                 where: { id: ctx.guild!.id },
               });
               if (!systemResult) {
                 return ctx.respond([]);
               }
-              systemResult.systems
+              const filter = systemResult.systems
                 .filter(
-                  (sys) => sys.name.includes(focusedOption) && sys.enabled,
+                  (sys) =>
+                    sys.enabled &&
+                    (!selectedSystem || sys.name === selectedSystem),
                 )
-                .forEach(async (sys) => {
-                  const f = sys.channels.map((channel) => ({
-                    name: channel.name,
-                    value: channel.id,
-                  }));
-                  await ctx.respond(f);
-                });
+                .flatMap((sys) =>
+                  sys.channels
+                    .filter((channel) =>
+                      channel.name.toLowerCase().includes(focusedOption),
+                    )
+                    .map((channel) => ({
+                      name: channel.name,
+                      value: channel.id,
+                    })),
+                );
+
+              await ctx.respond(filter);
             },
           },
           required: true,
