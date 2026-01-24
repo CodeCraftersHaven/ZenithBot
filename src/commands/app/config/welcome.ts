@@ -4,7 +4,7 @@ import {
   ActionRowBuilder,
   ApplicationCommandOptionType,
   ButtonBuilder,
-  ButtonStyle
+  ButtonStyle,
 } from "discord.js";
 
 const GUILD_SKU_ID = process.env.GUILD_SKU_ID!;
@@ -71,7 +71,7 @@ export default commandModule({
     const hasEntitlement = interaction.entitlements.some(
       (e) => e.skuId === GUILD_SKU_ID,
     );
-    
+
     if (style === "custom") {
       if (!hasEntitlement) {
         const premiumBtn = new ButtonBuilder()

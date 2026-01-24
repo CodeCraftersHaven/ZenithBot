@@ -172,7 +172,7 @@ async function translateImage(imageUrl: string, target: string) {
 
     return { text: fullTranslatedText.trim() || fullText, attachment };
   } catch (_error) {
-    return { text: "Failed to process image. "+_error };
+    return { text: "Failed to process image. " + _error };
   }
 }
 
