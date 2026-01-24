@@ -249,11 +249,7 @@ export default commandModule({
           });
         }
         const Systems = new sys(guildId!, guild.name, system, channel);
-        if (system === "selfroles" && guildId !== process.env.HOME_SERVER_ID!) {
-          return await ctx.reply(
-            "This system is still in development. Please be patient.",
-          );
-        }
+
         const panel = await Systems.createPanel();
         return await ctx.reply(panel);
       },

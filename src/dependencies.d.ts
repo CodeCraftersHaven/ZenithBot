@@ -60,6 +60,7 @@ declare global {
     };
     ok: number;
   };
+  type MSG = { messageId: string; messageInfo: string };
 }
 
 export {};
