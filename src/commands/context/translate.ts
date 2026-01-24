@@ -24,7 +24,6 @@ function smartSplit(text: string, maxLength: number): string[] {
   return chunks;
 }
 
-
 export default commandModule({
   type: CommandType.CtxMsg,
   plugins: [
@@ -58,29 +57,25 @@ export default commandModule({
     let replyContent = "";
 
     if (message.content) {
-      replyContent = await translateText(
-        message.content,
-        defaultLang.value,
-      )+await toTranslate(hint, defaultLang.value, defaultLang.label);
+      replyContent =
+        (await translateText(message.content, defaultLang.value)) +
+        (await toTranslate(hint, defaultLang.value, defaultLang.label));
     } else {
       replyContent = await translateText(hint, defaultLang.value);
     }
 
-        const files: AttachmentBuilder[] = [];
-        if (message.attachments.size > 0) {
-          const images = message.attachments.filter((a) =>
-            a.contentType?.startsWith("image/"),
-          );
-          for (const img of images.values()) {
-            const { attachment } = await translateImage(
-              img.url,
-              defaultLang.value,
-            );
-            if (attachment) {
-              files.push(attachment);
-            }
-          }
+    const files: AttachmentBuilder[] = [];
+    if (message.attachments.size > 0) {
+      const images = message.attachments.filter((a) =>
+        a.contentType?.startsWith("image/"),
+      );
+      for (const img of images.values()) {
+        const { attachment } = await translateImage(img.url, defaultLang.value);
+        if (attachment) {
+          files.push(attachment);
         }
+      }
+    }
     const embeds = [];
     if (message.embeds.length > 0) {
       for (const embed of message.embeds) {
@@ -100,12 +95,12 @@ export default commandModule({
               : null,
             embed.fields?.length
               ? Promise.all(
-                embed.fields.map(async (field) => ({
-                  name: await translateText(field.name, defaultLang.value),
-                  value: await translateText(field.value, defaultLang.value),
-                  inline: field.inline,
-                })),
-              )
+                  embed.fields.map(async (field) => ({
+                    name: await translateText(field.name, defaultLang.value),
+                    value: await translateText(field.value, defaultLang.value),
+                    inline: field.inline,
+                  })),
+                )
               : null,
           ]);
 
@@ -133,7 +128,13 @@ export default commandModule({
     }
     const button = new ButtonBuilder()
       .setCustomId("translate/newlang")
-      .setLabel(await toTranslate("Unknown language", defaultLang.value, defaultLang.label))
+      .setLabel(
+        await toTranslate(
+          "Unknown language",
+          defaultLang.value,
+          defaultLang.label,
+        ),
+      )
       .setStyle(ButtonStyle.Danger);
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(button);
@@ -163,6 +164,12 @@ export default commandModule({
   },
 });
 
-async function toTranslate(text: string, targetValue: string, targetLabel: string) {
-  return targetLabel.toLowerCase() === "english" ? text : await translateText(text, targetValue);
+async function toTranslate(
+  text: string,
+  targetValue: string,
+  targetLabel: string,
+) {
+  return targetLabel.toLowerCase() === "english"
+    ? text
+    : await translateText(text, targetValue);
 }

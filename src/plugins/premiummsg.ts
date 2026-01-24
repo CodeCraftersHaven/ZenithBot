@@ -9,9 +9,7 @@ import {
 
 export function premiumMsgOnly(skuId: Snowflake) {
   return CommandControlPlugin<CommandType.CtxMsg>(async (ctx) => {
-    const hasEntitlement = ctx.entitlements.some(
-      (ent) => ent.skuId === skuId,
-    );
+    const hasEntitlement = ctx.entitlements.some((ent) => ent.skuId === skuId);
 
     if (hasEntitlement) {
       return controller.next();

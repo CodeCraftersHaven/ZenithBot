@@ -13,7 +13,11 @@ export default class Welcome {
    * @param member The Discord GuildMember joining
    * @param backgroundPath The absolute path to the background image (preset or custom)
    */
-  async generateWelcomeMessage(member: GuildMember, backgroundPath: string, writeMemberCount: boolean = true) {
+  async generateWelcomeMessage(
+    member: GuildMember,
+    backgroundPath: string,
+    writeMemberCount: boolean = true,
+  ) {
     // 1. Load the dynamic background passed from the event handler
     const background = await loadImage(backgroundPath);
 
@@ -78,7 +82,9 @@ export default class Welcome {
       ctx.font = "24px Normal";
       const memberTextY = guildTextY + 50;
 
-      const botCount = member.guild.members.cache.filter((m) => m.user.bot).size;
+      const botCount = member.guild.members.cache.filter(
+        (m) => m.user.bot,
+      ).size;
       const userCount = member.guild.memberCount;
       const memberCount = userCount - botCount;
 
