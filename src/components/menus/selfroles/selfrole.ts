@@ -21,18 +21,17 @@ export default commandModule({
       });
     const msgId = ctx.values[0];
     const messages = await ctx.channel?.messages.fetch();
-    if (!messages) return await ctx.reply("No messages found.");
+    if (!messages) return await ctx.update("No messages found.");
 
     const acts = {
       "delete-message-select": async () => {
         const message = messages.get(msgId);
-        if (!message) return await ctx.reply("Message not found.");
+        if (!message) return await ctx.update("Message not found.");
         await message.delete();
-        await ctx.message.react("✅");
-        setTimeout(async () => {
-          await ctx.message.delete();
-        }, 5000);
-        await ctx.deferUpdate();
+        await ctx.update({
+          content: "Message deleted.",
+          components: [],
+        });
       },
       "edit-message-select": async () => {
         const selectMenu = new StringSelectMenuBuilder()
@@ -47,11 +46,10 @@ export default commandModule({
           new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
             selectMenu,
           );
-        await ctx.message.edit({
+        await ctx.update({
           content: "Select a field to edit:\n" + msgId,
           components: [row],
         });
-        await ctx.deferUpdate();
       },
       "edit-message-fields": async () => {
         const field = ctx.values[0];
@@ -59,7 +57,7 @@ export default commandModule({
       },
       "remove-role-select": async () => {
         const message = messages.get(msgId);
-        if (!message) return await ctx.reply("Message not found.");
+        if (!message) return await ctx.editReply("Message not found.");
 
         const buttons = message.components
           .flatMap(
@@ -128,9 +126,7 @@ export default commandModule({
           components: [row],
         });
       },
-      default: async () => {
-        await ctx.deleteReply();
-      },
+      default: async () => {},
     };
     type Act = keyof typeof acts;
     const result = ((await acts[params as Act]) || acts.default)();

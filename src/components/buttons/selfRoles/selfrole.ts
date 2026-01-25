@@ -18,6 +18,8 @@ export default commandModule({
         content: "You do not have permission to use this command.",
         flags: MessageFlags.Ephemeral,
       });
+    // await ctx.deferReply({ flags: MessageFlags.Ephemeral, withResponse: true})
+
     const { systems } = deps["@prisma/client"];
     const selfRoleSystem = await findSystem(systems, ctx.guildId!, "selfroles");
 
@@ -71,6 +73,7 @@ export default commandModule({
         await ctx.reply({
           content: "What part would you like to update?",
           components: msgs.length > 0 ? [messageRow, roleRow] : [messageRow],
+          flags: MessageFlags.Ephemeral,
         });
       },
       "create-message": async () => {
@@ -104,16 +107,17 @@ async function createMenuBuilder(
   ctx: ButtonInteraction<CacheType>,
 ) {
   if (!msgs.length) {
-    await ctx.message.delete();
-    return await ctx.reply({
+    // await ctx.message.delete();
+    return await ctx.update({
       content:
         "No messages to edit. I don't see any other messages in this channel.",
-      flags: MessageFlags.Ephemeral,
+      components: [],
+      // flags: MessageFlags.Ephemeral,
     });
   }
   const selectMenu = new StringSelectMenuBuilder()
     .setCustomId(custom_id)
-    .setPlaceholder("Select a message to edit")
+    .setPlaceholder("Select a message")
     .addOptions(
       msgs.map((msg) => ({
         label: msg.messageInfo,
@@ -125,7 +129,7 @@ async function createMenuBuilder(
     selectMenu,
   );
 
-  await ctx.message.edit({
+  await ctx.update({
     content: "Select a message to edit:",
     components: [row],
   });

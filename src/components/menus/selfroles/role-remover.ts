@@ -5,27 +5,25 @@ import {
   ButtonBuilder,
   ButtonComponent,
   ComponentType,
-  MessageActionRowComponent,
-  MessageFlags,
+  MessageActionRowComponent
 } from "discord.js";
 
 export default commandModule({
   type: CommandType.StringSelect,
   async execute(ctx, { params }) {
+    await ctx.deferUpdate()
     if (!ctx.memberPermissions?.has("ManageGuild"))
-      return await ctx.reply({
+      return await ctx.editReply({
         content: "You do not have permission to use this command.",
-        flags: MessageFlags.Ephemeral,
       });
 
     const roleId = ctx.values[0];
     const msgId = params;
 
-    if (!msgId) return await ctx.reply("Error: Message ID not found.");
+    if (!msgId) return await ctx.editReply("Error: Message ID not found.");
 
     const message = await ctx.channel?.messages.fetch(msgId);
-    if (!message) return await ctx.reply("Message not found.");
-    await ctx.message.delete();
+    if (!message) return await ctx.editReply("Message not found.");
     const newComponents = message.components
       .map((row) => {
         const rowBuilder = new ActionRowBuilder<ButtonBuilder>();
@@ -53,9 +51,9 @@ export default commandModule({
       .filter((r) => r !== null) as ActionRowBuilder<ButtonBuilder>[];
 
     await message.edit({ components: newComponents });
-    await ctx.reply({
+    await ctx.editReply({
       content: `Removed role button for role <@&${roleId}>`,
-      flags: MessageFlags.Ephemeral,
+      components: [],
     });
   },
 });

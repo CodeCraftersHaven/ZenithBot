@@ -18,6 +18,7 @@ export default commandModule({
 
     const acts = {
       cmodal: async () => {
+        await ctx.deferUpdate();
         const title = ctx.fields.getTextInputValue("selfrole/cmodal/title");
         const description = ctx.fields.getTextInputValue(
           "selfrole/cmodal/description",
@@ -29,21 +30,29 @@ export default commandModule({
           color: 0x2b2d31,
         };
         await (ctx.channel as TextChannel).send({ embeds: [embed] });
-        await ctx.message?.delete();
-        await ctx.deferUpdate();
+        await ctx.editReply({
+          content: "Message Sent!",
+          components: [],
+        });
       },
       emodal: async () => {
+        await ctx.deferUpdate();
+        const msg = ctx.message!;
         let title = "";
         let description = "";
-        const msgId = (await ctx.message?.fetch())?.content.split("\n")[1];
+        const msgId = msg.content.split("\n")[1];
         const messages = await ctx.channel?.messages.fetch();
-        if (!messages) return await ctx.reply("No messages found.");
+        if (!messages) return await ctx.editReply("No messages found.");
         const message = messages.get(msgId!);
-        if (!message) return await ctx.reply("No message found.");
+        if (!message) return await ctx.editReply("No message found.");
         const embed = message.embeds[0];
         const updatedEmbed = new EmbedBuilder(
           EmbedBuilder.from(embed).toJSON(),
         );
+        await ctx.editReply({
+          content: "Message Edited!",
+          components: [],
+        });
         const modalFields = ctx.fields.components.map((c) => c);
         modalFields.find((c) => {
           const input = c as ModalField;
@@ -57,12 +66,9 @@ export default commandModule({
           }
         });
         await message.edit({ embeds: [updatedEmbed] });
-        await ctx.message?.delete();
-        await ctx.deferUpdate();
       },
       default: async () => {
-        console.log(ctx.customId);
-        await ctx.deferUpdate();
+        return console.log(ctx.customId);
       },
     };
     type Act = keyof typeof acts;

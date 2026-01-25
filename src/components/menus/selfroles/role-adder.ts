@@ -18,27 +18,25 @@ export default commandModule({
         content: "You do not have permission to use this command.",
         flags: MessageFlags.Ephemeral,
       });
-
+    await ctx.deferUpdate()
     const roleId = ctx.values[0];
     const role = await ctx.guild?.roles.fetch(roleId);
-    if (!role) return await ctx.reply("Role not found.");
+    if (!role) return await ctx.editReply("Role not found.");
     const label = role.name;
     const msgId = params;
-    if (!msgId) return await ctx.reply("Error: Message ID not found.");
+    if (!msgId) return await ctx.editReply("Error: Message ID not found.");
 
     const messages = await ctx.channel?.messages.fetch();
     const message = messages?.get(msgId);
-    await ctx.message.delete();
-    if (!message) return await ctx.reply("Message not found.");
+    if (!message) return await ctx.editReply("Message not found.");
     const isDuplicate = message.components.some((row) =>
       (row as ActionRow<MessageActionRowComponent>).components.some(
         (c) => c.customId === `rolebutton/${roleId}`,
       ),
     );
     if (isDuplicate) {
-      return await ctx.reply({
+      return await ctx.editReply({
         content: `Role button for role <@&${roleId}> already exists.`,
-        flags: MessageFlags.Ephemeral,
       });
     }
     const newButton = new ButtonBuilder()
@@ -74,7 +72,7 @@ export default commandModule({
 
     if (!added) {
       if (components.length >= 5) {
-        return await ctx.reply("Max buttons reached (25). Cannot add more.");
+        return await ctx.editReply("Max buttons reached (25). Cannot add more.");
       }
       const newRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
         newButton,
@@ -83,9 +81,9 @@ export default commandModule({
     }
 
     await message.edit({ components });
-    await ctx.reply({
+    await ctx.editReply({
       content: `Added role button for role <@&${roleId}>`,
-      flags: MessageFlags.Ephemeral,
+      components: [],
     });
   },
 });
