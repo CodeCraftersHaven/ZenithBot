@@ -1,10 +1,5 @@
-import "dotenv/config.js";
-import * as config from "./config.js";
-import { Client, GatewayIntentBits } from "discord.js";
-import { Sern, makeDependencies } from "@sern/handler";
-import { Publisher } from "@sern/publisher";
-import { logger, prisma } from "#utils";
 import {
+  AntiScam,
   AutoRole,
   Counting,
   Giveaways,
@@ -13,6 +8,12 @@ import {
   Tickets,
   Welcome,
 } from "#systems";
+import { logger, prisma } from "#utils";
+import { Sern, makeDependencies } from "@sern/handler";
+import { Publisher } from "@sern/publisher";
+import { Client, GatewayIntentBits } from "discord.js";
+import "dotenv/config.js";
+import * as config from "./config.js";
 
 const client = new Client({
   intents: [
@@ -33,6 +34,7 @@ await makeDependencies(({ add, swap }) => {
   add("@prisma/client", prisma);
   swap("@sern/logger", logger);
   add("systems", {
+    AntiScam: AntiScam.default,
     AutoRole: AutoRole.default,
     Counting: Counting.default,
     Giveaway: Giveaways.default,

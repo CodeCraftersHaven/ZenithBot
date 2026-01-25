@@ -1,3 +1,4 @@
+export * as AntiScam from "./antiScam.js";
 export * as AutoRole from "./autoRole.js";
 export * as Counting from "./counting.js";
 export * as Giveaways from "./giveaway.js";

@@ -5,6 +5,7 @@
  */
 
 import type {
+  AntiScam,
   AutoRole,
   Counting,
   Giveaways,
@@ -29,6 +30,7 @@ declare global {
     "@sern/logger": Logger;
     "@prisma/client": PrismaClient;
     systems: {
+      AntiScam: AntiScam.antiScam;
       AutoRole: AutoRole.autoRole;
       Counting: Counting.counting;
       Giveaway: Giveaways.giveaway;
@@ -61,6 +63,14 @@ declare global {
     ok: number;
   };
   type MSG = { messageId: string; messageInfo: string };
+  interface CachedMessage {
+    content: string;
+    attachmentSize: number | undefined;
+    attachmentName: string | undefined;
+    channelId: string;
+    messageId: string;
+    timestamp: number;
+  }
 }
 
 export {};
