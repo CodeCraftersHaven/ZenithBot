@@ -5,11 +5,12 @@ services:
     restart: unless-stopped
     env_file:
       - .env
-    # Attach to the same network as Ollama
+    # Map local "uploads" folder to the container's "/zenith/uploads" folder
+    volumes:
+      - ./uploads:/zenith/uploads
     networks:
       - zenith-net
 
-# Tell Docker this network already exists (created in Step 1)
 networks:
   zenith-net:
     external: true
