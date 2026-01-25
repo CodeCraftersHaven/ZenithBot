@@ -18,7 +18,7 @@ export default commandModule({
         content: "You do not have permission to use this command.",
         flags: MessageFlags.Ephemeral,
       });
-    await ctx.deferUpdate()
+    await ctx.deferUpdate();
     const roleId = ctx.values[0];
     const role = await ctx.guild?.roles.fetch(roleId);
     if (!role) return await ctx.editReply("Role not found.");
@@ -72,7 +72,9 @@ export default commandModule({
 
     if (!added) {
       if (components.length >= 5) {
-        return await ctx.editReply("Max buttons reached (25). Cannot add more.");
+        return await ctx.editReply(
+          "Max buttons reached (25). Cannot add more.",
+        );
       }
       const newRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
         newButton,

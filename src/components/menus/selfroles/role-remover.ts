@@ -5,13 +5,13 @@ import {
   ButtonBuilder,
   ButtonComponent,
   ComponentType,
-  MessageActionRowComponent
+  MessageActionRowComponent,
 } from "discord.js";
 
 export default commandModule({
   type: CommandType.StringSelect,
   async execute(ctx, { params }) {
-    await ctx.deferUpdate()
+    await ctx.deferUpdate();
     if (!ctx.memberPermissions?.has("ManageGuild"))
       return await ctx.editReply({
         content: "You do not have permission to use this command.",
