@@ -37,12 +37,9 @@ export default commandModule({
           .map((c) => {
             const btn = new ButtonBuilder()
               .setStyle(c.style)
+              .setLabel(c.label!)
+              .setCustomId(c.customId!)
               .setDisabled(c.disabled ?? false);
-
-            if (c.label) btn.setLabel(c.label);
-            if (c.customId) btn.setCustomId(c.customId);
-            if (c.emoji) btn.setEmoji(c.emoji);
-            if (c.url) btn.setURL(c.url);
 
             return btn;
           });

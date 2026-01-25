@@ -52,13 +52,10 @@ export default commandModule({
         .filter((c): c is ButtonComponent => c.type === ComponentType.Button)
         .map((c) => {
           const btn = new ButtonBuilder()
+            .setCustomId(c.customId!)
             .setLabel(c.label!)
             .setStyle(c.style)
             .setDisabled(c.disabled ?? false);
-
-          if (c.customId) btn.setCustomId(c.customId);
-          if (c.emoji) btn.setEmoji(c.emoji);
-          if (c.url) btn.setURL(c.url);
 
           return btn;
         });
