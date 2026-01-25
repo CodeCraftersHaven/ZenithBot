@@ -57,15 +57,16 @@ export default commandModule({
       return ctx.editReply(notAMessage);
     }
 
-    const hint = `\n\n-# Click the button below if this didn't translate to your language.`;
+    const hint = `Click the button below if this didn't translate to your language.`;
     let replyContent = "";
 
     if (message.content) {
       replyContent =
         (await translateText(message.content, defaultLang.value)) +
+        `\n\n-# ` +
         (await toTranslate(hint, defaultLang.value, defaultLang.label));
     } else {
-      replyContent = await translateText(hint, defaultLang.value);
+      replyContent = `\n\n-# ` + (await translateText(hint, defaultLang.value));
     }
 
     const files: AttachmentBuilder[] = [];
