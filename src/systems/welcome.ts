@@ -1,5 +1,8 @@
-import { createCanvas, loadImage } from "canvas";
+import { createCanvas, loadImage } from "@napi-rs/canvas";
 import { AttachmentBuilder, GuildMember } from "discord.js";
+
+// Optional: Register a custom font for better text rendering
+// GlobalFonts.registerFromPath('./path/to/your/font.ttf', 'CustomFont');
 
 export default class Welcome {
   enabled: boolean;
@@ -12,6 +15,7 @@ export default class Welcome {
    * Generates the welcome image
    * @param member The Discord GuildMember joining
    * @param backgroundPath The absolute path to the background image (preset or custom)
+   * @param writeMemberCount Whether to display the total member count
    */
   async generateWelcomeMessage(
     member: GuildMember,
@@ -26,9 +30,9 @@ export default class Welcome {
 
     ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
 
-    // 2. Load Avatar
+    // 2. Load Avatar (Switched to WebP for faster downloading)
     const avatar = await loadImage(
-      member.displayAvatarURL({ extension: "png", size: 128 }),
+      member.displayAvatarURL({ extension: "webp", size: 128 }),
     );
 
     // Avatar styling variables
@@ -51,8 +55,8 @@ export default class Welcome {
     ctx.drawImage(avatar, avatarX, avatarY, avatarSize, avatarSize);
     ctx.restore();
 
-    // 3. Text Configuration
-    ctx.font = "32px Bold";
+    // 3. Text Configuration (Updated to standard CSS font syntax)
+    ctx.font = "bold 32px sans-serif";
     ctx.fillStyle = "#ffffff";
     ctx.textAlign = "center";
     ctx.strokeStyle = "#000000";
@@ -61,46 +65,40 @@ export default class Welcome {
     const welcomeTextY = avatarY - 40;
 
     // Draw "Welcome, {username}!"
-    ctx.strokeText(
-      `Welcome, ${member.user.username}!`,
-      canvas.width / 2,
-      welcomeTextY,
-    );
-    ctx.fillText(
-      `Welcome, ${member.user.username}!`,
-      canvas.width / 2,
-      welcomeTextY,
-    );
+    const welcomeText = `Welcome, ${member.user.username}!`;
+    ctx.strokeText(welcomeText, canvas.width / 2, welcomeTextY);
+    ctx.fillText(welcomeText, canvas.width / 2, welcomeTextY);
 
     // Draw "to {guild.name}"
     const guildTextY = avatarY + avatarSize + 50;
-    ctx.strokeText(`to ${member.guild.name}`, canvas.width / 2, guildTextY);
-    ctx.fillText(`to ${member.guild.name}`, canvas.width / 2, guildTextY);
+    const guildText = `to ${member.guild.name}`;
+    ctx.strokeText(guildText, canvas.width / 2, guildTextY);
+    ctx.fillText(guildText, canvas.width / 2, guildTextY);
 
     if (writeMemberCount) {
       // 4. Member Count Logic
-      ctx.font = "24px Normal";
+      ctx.font = "normal 24px sans-serif";
       const memberTextY = guildTextY + 50;
 
+      // Note: This relies on cache. If the bot resets, this count may be off
+      // until the cache fills, but fetching members here would cause rate limits.
       const botCount = member.guild.members.cache.filter(
         (m) => m.user.bot,
       ).size;
       const userCount = member.guild.memberCount;
       const memberCount = userCount - botCount;
 
+      const ordinal = this.getOrdinalSuffix(memberCount);
+      const countText = `You are the ${memberCount}${ordinal} member!`;
+
       // Draw "You are the nth member!"
-      ctx.strokeText(
-        `You are the ${memberCount}${this.getOrdinalSuffix(memberCount)} member!`,
-        canvas.width / 2,
-        memberTextY,
-      );
-      ctx.fillText(
-        `You are the ${memberCount}${this.getOrdinalSuffix(memberCount)} member!`,
-        canvas.width / 2,
-        memberTextY,
-      );
+      ctx.strokeText(countText, canvas.width / 2, memberTextY);
+      ctx.fillText(countText, canvas.width / 2, memberTextY);
     }
-    const attachment = new AttachmentBuilder(canvas.toBuffer(), {
+
+    // 5. Asynchronous Encoding (Prevents bot lag)
+    const buffer = await canvas.encode("png");
+    const attachment = new AttachmentBuilder(buffer, {
       name: "welcome.png",
     });
 
@@ -122,4 +120,4 @@ export default class Welcome {
   }
 }
 
-export type welcome = typeof Welcome;
+export type WelcomeType = typeof Welcome;

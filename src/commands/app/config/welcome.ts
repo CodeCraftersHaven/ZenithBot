@@ -5,6 +5,7 @@ import {
   ApplicationCommandOptionType,
   ButtonBuilder,
   ButtonStyle,
+  MessageFlags,
 } from "discord.js";
 
 const GUILD_SKU_ID = process.env.GUILD_SKU_ID!;
@@ -68,9 +69,9 @@ export default commandModule({
     });
     const finalEmbed = embed ?? existingConfig?.embed ?? false;
 
-    const hasEntitlement = interaction.entitlements.some(
-      (e) => e.skuId === GUILD_SKU_ID,
-    );
+    const hasEntitlement =
+      interaction.entitlements.some((e) => e.skuId === GUILD_SKU_ID) ||
+      ctx.guild?.id === process.env.HOME_SERVER_ID;
 
     if (style === "custom") {
       if (!hasEntitlement) {
@@ -97,6 +98,7 @@ export default commandModule({
         });
       }
       if (!attachment.contentType?.startsWith("image/")) {
+        console.log(attachment.contentType);
         return interaction.reply({
           content: "⚠️ Please upload a valid image file (PNG, JPG, GIF).",
           ephemeral: true,
@@ -108,7 +110,12 @@ export default commandModule({
           attachment.url,
           interaction.guildId!,
         );
-
+        if (localPath.startsWith("Error:")) {
+          return interaction.reply({
+            content: localPath,
+            flags: MessageFlags.Ephemeral,
+          });
+        }
         await prisma.guildConfig.upsert({
           where: { id: interaction.guildId! },
           create: {
@@ -132,8 +139,8 @@ export default commandModule({
       } catch (e) {
         console.error(e);
         return interaction.reply({
-          content: "❌ Failed to download image to server.",
-          ephemeral: true,
+          content: "❌ Failed to download image to server. " + e,
+          flags: MessageFlags.Ephemeral,
         });
       }
     }

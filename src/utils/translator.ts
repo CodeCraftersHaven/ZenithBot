@@ -1,5 +1,5 @@
+import { createCanvas, loadImage } from "@napi-rs/canvas";
 import axios from "axios";
-import { createCanvas, loadImage } from "canvas";
 import { AttachmentBuilder } from "discord.js";
 import type { Paragraph } from "tesseract.js";
 import { createWorker } from "tesseract.js";
@@ -20,15 +20,11 @@ async function translateText(text: string, target: string) {
 
     const response = await axios.post(endpoint, {
       model: "qwen2.5:1.5b",
-
       system: `You are a professional translator. Translate the user's text to ${targetLang}. Output ONLY the translated text. No notes, no explanations.`,
-
       prompt: cleanText,
-
       options: {
         temperature: 0,
       },
-
       stream: false,
     });
 
@@ -86,7 +82,6 @@ async function translateImage(imageUrl: string, target: string) {
 
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-
       ctx.drawImage(image, 0, 0);
 
       ctx.fillStyle = "#000000";
@@ -99,7 +94,7 @@ async function translateImage(imageUrl: string, target: string) {
         y += lineHeight;
       }
 
-      const buffer = canvas.toBuffer();
+      const buffer = await canvas.encode("png");
       const attachment = new AttachmentBuilder(buffer, {
         name: "translated_image.png",
       });
@@ -108,7 +103,6 @@ async function translateImage(imageUrl: string, target: string) {
 
     const canvas = createCanvas(image.width, image.height);
     const ctx = canvas.getContext("2d");
-
     ctx.drawImage(image, 0, 0, image.width, image.height);
 
     let fullTranslatedText = "";
@@ -117,6 +111,7 @@ async function translateImage(imageUrl: string, target: string) {
       if (!paragraph || !paragraph.text || !paragraph.text.trim()) continue;
 
       const sourceText = paragraph.text.trim();
+
       await new Promise((r) => setTimeout(r, 500));
 
       const translatedPara = await translateText(sourceText, target);
@@ -164,7 +159,7 @@ async function translateImage(imageUrl: string, target: string) {
       }
     }
 
-    const buffer = canvas.toBuffer();
+    const buffer = await canvas.encode("png");
 
     const attachment = new AttachmentBuilder(buffer, {
       name: "translated_image.png",
