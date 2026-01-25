@@ -66,9 +66,9 @@ export default commandModule({
           .filter((c) => c.type === ComponentType.Button) as ButtonComponent[];
 
         if (buttons.length === 0) {
-          return await ctx.reply({
+          return await ctx.update({
             content: "No buttons to remove.",
-            flags: MessageFlags.Ephemeral,
+            components: [],
           });
         }
 
@@ -97,22 +97,22 @@ export default commandModule({
       },
       "add-role-select": async () => {
         const message = messages.get(msgId);
-        if (!message) return await ctx.reply("Message not found.");
+        if (!message) return await ctx.update("Message not found.");
         const existingRow = message.components;
         if (existingRow.length >= 5) {
           const lastRow =
             existingRow[4] as ActionRow<MessageActionRowComponent>;
           if (lastRow.components.length >= 5) {
-            return await ctx.reply({
+            return await ctx.update({
               content:
                 "Max buttons reached (25). Please remove some before adding new ones.",
-              flags: MessageFlags.Ephemeral,
+              components: [],
             });
           }
         }
 
         const roleSelect = new RoleSelectMenuBuilder()
-          .setCustomId(`role-selector/${msgId}`)
+          .setCustomId(`role-adder/${msgId}`)
           .setPlaceholder("Select the role to add")
           .setMinValues(1)
           .setMaxValues(1);

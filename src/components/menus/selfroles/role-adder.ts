@@ -20,12 +20,12 @@ export default commandModule({
       });
     await ctx.deferUpdate();
     const roleId = ctx.values[0];
+    if (!roleId) return await ctx.editReply("Error: Role ID not found.");
     const role = await ctx.guild?.roles.fetch(roleId);
     if (!role) return await ctx.editReply("Role not found.");
     const label = role.name;
     const msgId = params;
     if (!msgId) return await ctx.editReply("Error: Message ID not found.");
-
     const messages = await ctx.channel?.messages.fetch();
     const message = messages?.get(msgId);
     if (!message) return await ctx.editReply("Message not found.");
@@ -50,10 +50,10 @@ export default commandModule({
         .filter((c): c is ButtonComponent => c.type === ComponentType.Button)
         .map((c) => {
           const btn = new ButtonBuilder()
-            .setCustomId(c.customId!)
-            .setLabel(c.label!)
             .setStyle(c.style)
             .setDisabled(c.disabled ?? false);
+          if (c.customId) btn.setCustomId(c.customId);
+          if (c.label) btn.setLabel(c.label);
 
           return btn;
         });
