@@ -15,6 +15,7 @@ import {
 let system: string;
 
 const validSystems = [
+  "antiscam",
   "autorole",
   "counting",
   "giveaway",
@@ -24,6 +25,7 @@ const validSystems = [
 ] as const;
 type SystemKey = (typeof validSystems)[number];
 
+//this is for buttons with custom_id starting with systems/
 export default commandModule({
   type: CommandType.Button,
   async execute(ctx, { deps, params }) {
@@ -36,7 +38,7 @@ export default commandModule({
     const act = params! as "delete" | "like" | "dislike" | "comment";
 
     const commentButton = new ButtonBuilder({
-      custom_id: "panel/comment",
+      custom_id: "systems/comment",
       emoji: "💬",
       label: "Comment",
       style: ButtonStyle.Primary,
