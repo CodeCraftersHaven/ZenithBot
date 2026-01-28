@@ -47,6 +47,7 @@ export default commandModule({
                 .filter(
                   (sys) => sys.name.includes(focusedOption) && !sys.enabled,
                 )
+                .sort((a, b) => a.name.localeCompare(b.name))
                 .map((sys) => ({
                   name: sys.name,
                   value: sys.name,
@@ -90,6 +91,7 @@ export default commandModule({
                 .filter(
                   (sys) => sys.name.includes(focusedOption) && sys.enabled,
                 )
+                .sort((a, b) => a.name.localeCompare(b.name))
                 .map((sys) => ({
                   name: sys.name,
                   value: `${sys.name}-${sys.channels[0].id}`,
@@ -127,6 +129,7 @@ export default commandModule({
                 .filter(
                   (sys) => sys.name.includes(focusedOption) && sys.enabled,
                 )
+                .sort((a, b) => a.name.localeCompare(b.name))
                 .map((sys) => ({
                   name: sys.name,
                   value: sys.name,
@@ -172,6 +175,7 @@ export default commandModule({
                 .filter(
                   (sys) => sys.name.includes(focusedOption) && sys.enabled,
                 )
+                .sort((a, b) => a.name.localeCompare(b.name))
                 .map((sys) => ({
                   name: sys.name,
                   value: sys.name,
