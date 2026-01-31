@@ -165,6 +165,11 @@ export const syncDatabase = async (
   if (!feedbackSystem) {
     await prisma.feedback.create({
       data: {
+        antiscam: {
+          likes: 0,
+          dislikes: 0,
+          users: [],
+        },
         autorole: {
           likes: 0,
           dislikes: 0,
