@@ -1,6 +1,6 @@
 import { findSystem } from "#utils";
 import { eventModule, EventType, Services } from "@sern/handler";
-import { EmbedBuilder, Events, Routes, TextChannel } from "discord.js";
+import { AuditLogEvent, EmbedBuilder, Events, Routes, TextChannel } from "discord.js";
 import fs from "fs";
 import path from "path";
 
@@ -12,7 +12,6 @@ const PRESETS: Record<string, string> = {
   Neon: "Neon.png",
   Forest: "Forest.png",
   Cyberpunk: "Cyberpunk.png",
-  PalLink: "PalLink.png",
 };
 
 export default eventModule({
@@ -43,11 +42,22 @@ export default eventModule({
       "autorole",
     );
 
-    if (!welcome_system) {
-      logger.warn(
-        `No welcome system found in ${member.guild.name}(${member.guild.id})`,
-      );
-    } else {
+    const antiscam_system = await findSystem(
+      prisma.systems,
+      member.guild.id,
+      "antiscam",
+    );
+
+    if (antiscam_system) {
+      const auditLogs = await member.guild.fetchAuditLogs({
+        type: AuditLogEvent.MemberKick
+      });
+      auditLogs.entries.forEach(async (entry) => {
+        if (entry.targetId === member.id && entry.reason?.toLowerCase().includes("spam")) {
+        }
+      })
+    }
+    if (welcome_system) {
       const assetsDir = path.join(process.cwd(), "assets");
       let backgroundPath = path.join(assetsDir, "main.png");
 
@@ -110,12 +120,8 @@ export default eventModule({
       }
     }
 
-    if (!autorole_system) {
-      return logger.warn(
-        `No autorole system found in ${member.guild.name}(${member.guild.id})`,
-      );
+    if (autorole_system) {
+      await new AutoRole(true).giveRole(member);
     }
-
-    await new AutoRole(true).giveRole(member);
   },
 });
