@@ -107,6 +107,15 @@ export default commandModule({
         });
 
         await Ticket.openTicket();
+        let arr: string[] = [];
+        ctx.guild?.members.cache.map((m) => {
+          m.roles.cache.has(staffId) && arr.push(m.id);
+        })
+        if (arr.length > 0) {
+          arr.forEach(async (id) => {
+            await newThread.members.add(id);
+          })
+        }
         await newThread.send({
           content: `<@&${staffId}>, Please claim the ticket by clicking the button below. This will remove everyone else from the ticket.`,
           components: [claimRow],
@@ -135,8 +144,11 @@ export default commandModule({
         }
         const Ticket = new tickets(true, (ctx.guild as Guild).id, thread.id, id);
         await thread.setLocked(true, "user has resolved their issue.");
-        await ctx.message.edit({ components: [] });
 
+        ctx.channel?.messages.fetch().then((msgs) => {
+          msgs.filter((m) => !m.system && m.author.id === ctx.client.user.id)
+            .every(async (m) => await m.edit({ components: [] }))
+        })
         await thread.send({
           embeds: [{ description: "This ticket has been closed." }],
         });
@@ -323,13 +335,16 @@ export default commandModule({
         if (id === ctx.user.id)
           return ctx.editReply("You cannot accept your own request.");
         const managedRole = guild.roles.cache.find(
-          (role) => role.managed && role.name === "customs",
+          (role) => role.managed && role.name === ctx.client.user.username,
         );
-
+        const vcParent = thread.parent?.parent;
+        if (!vcParent?.permissionsFor(ctx.guild?.members.me!)?.has([PermissionsBitField.Flags.Connect, PermissionsBitField.Flags.Speak])) {
+          return ctx.editReply(`Please update my permissions to include Connect and Speak to use this feature.`)
+        }
         const voiceChannel = await guild.channels.create({
           name: `ticket-voice-${id}`,
           type: ChannelType.GuildVoice,
-          parent: thread.parent?.parent?.id,
+          parent: vcParent?.id,
           permissionOverwrites: [
             {
               id: managedRole!.id,
@@ -388,7 +403,7 @@ export default commandModule({
         });
         return ctx.deleteReply();
       },
-      default: () => {},
+      default: () => { },
     };
     type Act = keyof typeof acts;
     const result = ((await acts[act as Act]) || acts.default)();
