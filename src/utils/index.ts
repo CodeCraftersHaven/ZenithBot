@@ -9,3 +9,4 @@ export * from "./selfconfig.js";
 export * from "./timestamp.js";
 export * from "./translator.js";
 
+export const userCache = new Map<string, CachedMessage>();
