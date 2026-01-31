@@ -35,6 +35,7 @@ export default class Tickets {
     };
   }
   async closeTicket() {
+    console.log(`guildId: ${this.guildId}, channelId: ${this.channelId}, userId: ${this.userId}`)
     const userTicket = await this.db.userTicket.findUnique({
       where: { id: this.userId },
       // select: {
@@ -45,9 +46,8 @@ export default class Tickets {
     });
 
     const guild = userTicket?.guilds.find((g) => g.id === this.guildId);
-    if (!guild) throw new Error("Guild not found.");
 
-    const updatedTickets = guild.tickets.map((ticket) =>
+    const updatedTickets = guild?.tickets.map((ticket) =>
       ticket.channelId === this.channelId ? { ...ticket, open: false } : ticket,
     );
 
