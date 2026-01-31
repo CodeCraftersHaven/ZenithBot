@@ -36,7 +36,7 @@ export default class Tickets {
   }
   async closeTicket() {
     console.log(`guildId: ${this.guildId}, channelId: ${this.channelId}, userId: ${this.userId}`)
-    const userTicket = await this.db.userTicket.findUnique({
+    const userTicket = await this.db.userTicket.findFirst({
       where: { id: this.userId },
       // select: {
       //   guilds: {
