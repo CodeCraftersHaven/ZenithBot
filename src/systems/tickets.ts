@@ -37,11 +37,11 @@ export default class Tickets {
   async closeTicket() {
     const userTicket = await this.db.userTicket.findUnique({
       where: { id: this.userId },
-      select: {
-        guilds: {
-          select: { tickets: true, id: true },
-        },
-      },
+      // select: {
+      //   guilds: {
+      //     select: { tickets: true, id: true },
+      //   },
+      // },
     });
 
     const guild = userTicket?.guilds.find((g) => g.id === this.guildId);
