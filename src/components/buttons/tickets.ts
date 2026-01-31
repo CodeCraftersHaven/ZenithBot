@@ -154,6 +154,12 @@ export default commandModule({
         });
 
         await Ticket.closeTicket();
+        (ctx.channel as PrivateThreadChannel).members.fetch({ withMember: true })
+          .then((member) => {
+            member.map(async (m) => {
+              await m.remove()
+            })
+          })
         return await ctx.deleteReply();
       },
       check: async () => {
