@@ -355,7 +355,9 @@ export default commandModule({
             {
               id: managedRole!.id,
               allow: [
+                PermissionsBitField.Flags.Connect,
                 PermissionsBitField.Flags.ViewChannel,
+                PermissionsBitField.Flags.Speak,
                 PermissionsBitField.Flags.ManageChannels,
                 PermissionsBitField.Flags.ManageGuild,
               ],
