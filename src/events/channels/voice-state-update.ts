@@ -15,10 +15,7 @@ export default eventModule({
 
     if (channel.members.size === 0) {
       try {
-        const fetchedChannel = await channel.fetch();
-        if (fetchedChannel.members.size === 0) {
-          await fetchedChannel.delete();
-        }
+        await channel.delete();
       } catch (e) {
         logger.error({ message: "Failed to delete voice channel", error: e });
       }

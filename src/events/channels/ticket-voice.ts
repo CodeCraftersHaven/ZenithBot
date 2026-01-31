@@ -10,10 +10,9 @@ export default eventModule({
 
     logger.info(`Ticket voice channel created: ${channel.name}`);
 
-    // Give the user 30 seconds to join the channel
     setTimeout(async () => {
       try {
-        const fetchedChannel = await channel.fetch().catch(() => null);
+        const fetchedChannel = await channel.fetch();
         if (!fetchedChannel) return; // Channel already deleted
 
         if (fetchedChannel.members.size === 0) {
