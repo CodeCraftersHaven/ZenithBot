@@ -21,7 +21,7 @@ export default commandModule({
     await ctx.deferReply({ flags: MessageFlags.Ephemeral });
     const [tickets, prisma] = [deps["systems"].Tickets, deps["@prisma/client"]];
     const user = ctx.user as User;
-    const guild = ctx.guild as Guild;
+    const guild = await deps["@sern/client"].guilds.fetch((ctx.guild as Guild).id);
 
     const act = params! as
       | "open"
@@ -133,7 +133,7 @@ export default commandModule({
             content: "You do not have permission to close this ticket.",
           });
         }
-        const Ticket = new tickets(true, guild.id, thread.id, id);
+        const Ticket = new tickets(true, (ctx.guild as Guild).id, thread.id, id);
         await thread.setLocked(true, "user has resolved their issue.");
         await ctx.message.edit({ components: [] });
 
