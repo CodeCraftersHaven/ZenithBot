@@ -5,7 +5,7 @@ import {
   PrismaClientInitializationError,
   PrismaClientUnknownRequestError,
 } from "@prisma/client/runtime/library";
-import { logger } from "#utils";
+import { logger } from "./logger.js";
 
 export function handlePrismaError(error: PrismaError): void {
   switch (error.constructor) {

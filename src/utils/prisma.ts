@@ -1,4 +1,5 @@
-import { handlePrismaError, logger } from "#utils";
+import { handlePrismaError } from "./prismaErrors.js";
+import { logger } from "./logger.js";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 import { exec } from "child_process";
