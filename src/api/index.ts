@@ -2,7 +2,7 @@ import cors from "@fastify/cors";
 import cookie from "@fastify/cookie";
 import { Client } from "discord.js";
 import Fastify, { FastifyInstance } from "fastify";
-import authRoutes from "./routes/auth.js";
+import router from "./routes/index.js";
 
 export const startApi = async (client: Client) => {
   const fastify: FastifyInstance = Fastify({
@@ -19,12 +19,8 @@ export const startApi = async (client: Client) => {
     credentials: true,
   });
 
-  await fastify.register(
-    async (v1) => {
-      await v1.register(authRoutes, { prefix: "/auth", client });
-    },
-    { prefix: "/api/v1" },
-  );
+  // Register all routes with /api/v1 prefix
+  await fastify.register(router, { prefix: "/api/v1", client });
 
   const start = async () => {
     try {
