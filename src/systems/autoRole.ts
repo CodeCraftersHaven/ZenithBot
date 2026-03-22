@@ -22,8 +22,8 @@ export default class AutoRole {
   public async getRole(guildId: string) {
     const data = await this.prisma.autorole.findUnique({
       where: { id: guildId },
-      select: { roleId: true },
     });
+    if (!data || !data.roleId) return;
     return data?.roleId;
   }
 
