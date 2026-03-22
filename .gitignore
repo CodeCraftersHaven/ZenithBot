@@ -1,5 +1,4 @@
 node_modules
-# Keep environment variables out of version control
 .env
 dist
 .sern
@@ -9,3 +8,4 @@ runtime.logs
 *.lock
 package-lock.json
 assets/private/*.json
+*.traineddata
