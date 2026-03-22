@@ -19,6 +19,11 @@ export const startApi = async (client: Client) => {
     credentials: true,
   });
 
+  // Root level health check
+  fastify.get("/health", async () => {
+    return { status: "ok" };
+  });
+
   // Register all routes with /api/v1 prefix
   await fastify.register(router, { prefix: "/api/v1", client });
 
