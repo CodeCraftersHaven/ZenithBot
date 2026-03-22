@@ -14,7 +14,7 @@ export default async function authRoutes(
     const clientId = process.env.APP_ID;
     const redirectUri = encodeURIComponent(process.env.DISCORD_REDIRECT_URI!);
     const scope = encodeURIComponent("identify guilds");
-    
+
     // Generate a random state for this specific login attempt
     const state = randomBytes(16).toString("hex");
 
@@ -49,13 +49,14 @@ export default async function authRoutes(
         "https://discord.com/api/oauth2/token",
         new URLSearchParams({
           client_id: process.env.APP_ID!,
-          client_secret: process.env.SECRET!,
+
           grant_type: "authorization_code",
           code,
           redirect_uri: process.env.DISCORD_REDIRECT_URI!,
         }).toString(),
         {
           headers: {
+            Authorization: `Basic ${Buffer.from(`${process.env.APP_ID}:${process.env.SECRET}`).toString("base64")}`,
             "Content-Type": "application/x-www-form-urlencoded",
           },
         },
@@ -75,7 +76,7 @@ export default async function authRoutes(
         maxAge: 60 * 60 * 24 * 7, // 1 week
       });
 
-      return reply.redirect("https://zenith-bot.xyz/");
+      return reply.redirect("/dashboard");
     } catch (error: unknown) {
       fastify.log.error(error);
       const details =
@@ -99,7 +100,7 @@ export default async function authRoutes(
     try {
       const userResponse = await axios.get("https://discord.com/api/users/@me", {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Basic ${Buffer.from(`${process.env.APP_ID}:${process.env.SECRET}`).toString("base64")}` || `Bearer ${accessToken}`,
         },
       });
 

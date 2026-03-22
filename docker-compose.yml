@@ -5,7 +5,8 @@ services:
     restart: unless-stopped
     env_file:
       - .env
-    # Map local "uploads" folder to the container's "/zenith/uploads" folder
+    ports:
+      - "20000:20000/tcp"
     volumes:
       - ./uploads:/zenith/uploads
     networks:
