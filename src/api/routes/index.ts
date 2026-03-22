@@ -20,8 +20,8 @@ export default async function router(
   fastify.get("/health", async () => {
     let databaseStatus = "unknown";
     try {
-      // Simple raw query to check database connectivity
-      await prisma.$queryRaw`SELECT 1`;
+      // Use a model check that works with both SQL and MongoDB
+      await prisma.systems.findFirst();
       databaseStatus = "ok";
     } catch (error) {
       fastify.log.error(error);
