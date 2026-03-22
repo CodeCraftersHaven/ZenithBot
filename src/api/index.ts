@@ -1,5 +1,5 @@
-import cors from "@fastify/cors";
 import cookie from "@fastify/cookie";
+import cors from "@fastify/cors";
 import { Client } from "discord.js";
 import Fastify, { FastifyInstance } from "fastify";
 import router from "./routes/index.js";
@@ -15,7 +15,7 @@ export const startApi = async (client: Client) => {
   });
 
   await fastify.register(cors, {
-    origin: "https://zenithbot.xyz",
+    origin: "https://zenith-bot.xyz",
     credentials: true,
   });
 
