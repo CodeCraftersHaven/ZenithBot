@@ -1,7 +1,7 @@
 import axios from "axios";
+import { randomBytes } from "crypto";
 import { Client } from "discord.js";
 import { FastifyInstance } from "fastify";
-import { randomBytes } from "crypto";
 
 export default async function authRoutes(
   fastify: FastifyInstance,
@@ -75,7 +75,7 @@ export default async function authRoutes(
         maxAge: 60 * 60 * 24 * 7, // 1 week
       });
 
-      return reply.redirect("https://zenithbot.xyz/");
+      return reply.redirect("https://zenith-bot.xyz/");
     } catch (error: unknown) {
       fastify.log.error(error);
       const details =
