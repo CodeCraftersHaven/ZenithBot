@@ -1,6 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { Client } from "discord.js";
 import authRoutes from "./auth.js";
+import discordRoutes from "./discord.js";
 import { prisma } from "#utils";
 
 /**
@@ -15,6 +16,9 @@ export default async function router(
 
   // Authentication routes
   await fastify.register(authRoutes, { prefix: "/auth", client });
+
+  // Discord data routes
+  await fastify.register(discordRoutes, { prefix: "/discord", client });
 
   // Health check endpoint
   fastify.get("/health", async () => {
