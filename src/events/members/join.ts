@@ -1,6 +1,12 @@
 import { findSystem } from "#utils";
 import { eventModule, EventType, Services } from "@sern/handler";
-import { AuditLogEvent, EmbedBuilder, Events, Routes, TextChannel } from "discord.js";
+import {
+  AuditLogEvent,
+  EmbedBuilder,
+  Events,
+  Routes,
+  TextChannel,
+} from "discord.js";
 import fs from "fs";
 import path from "path";
 
@@ -50,12 +56,15 @@ export default eventModule({
 
     if (antiscam_system) {
       const auditLogs = await member.guild.fetchAuditLogs({
-        type: AuditLogEvent.MemberKick
+        type: AuditLogEvent.MemberKick,
       });
       auditLogs.entries.forEach(async (entry) => {
-        if (entry.targetId === member.id && entry.reason?.toLowerCase().includes("spam")) {
+        if (
+          entry.targetId === member.id &&
+          entry.reason?.toLowerCase().includes("spam")
+        ) {
         }
-      })
+      });
     }
     if (welcome_system) {
       const assetsDir = path.join(process.cwd(), "assets");

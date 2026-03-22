@@ -1,7 +1,15 @@
 import { findSystem } from "#utils";
 import { PrismaClient } from "@prisma/client";
 import { Service } from "@sern/handler";
-import { AttachmentBuilder, EmbedBuilder, Message } from "discord.js";
+import {
+  ActionRowBuilder,
+  AttachmentBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  EmbedBuilder,
+  GuildMember,
+  Message,
+} from "discord.js";
 
 export default class AntiScam {
   private prisma: PrismaClient;
@@ -13,6 +21,52 @@ export default class AntiScam {
     this.prisma = Service("@prisma/client");
     this.userCache = userCache;
     this.handleAntiScam();
+  }
+  get UserCache() {
+    return this.userCache;
+  }
+  async timeoutMember(member: GuildMember, operator: GuildMember) {
+    if (!this.message.guild?.members.me?.permissions.has("ModerateMembers")) {
+      return "I don't have the manage members permission.";
+    }
+    if (!operator.permissions.has("ModerateMembers")) {
+      return "You don't have the manage members permission.";
+    }
+    await member.timeout(24 * 60 * 60 * 1000, "Scam attempt detected.");
+    return `I have timed out <@${member.id}> for 24 hours.`;
+  }
+
+  async removeTimeout(member: GuildMember, operator: GuildMember) {
+    if (!this.message.guild?.members.me?.permissions.has("ModerateMembers")) {
+      return "I don't have the manage members permission.";
+    }
+    if (!operator.permissions.has("ModerateMembers")) {
+      return "You don't have the manage members permission.";
+    }
+    await member.timeout(null, "Scam attempt overturned.");
+    return `I have removed the timeout from <@${member.id}>.`;
+  }
+
+  async kickMember(member: GuildMember, operator: GuildMember) {
+    if (!this.message.guild?.members.me?.permissions.has("KickMembers")) {
+      return "I don't have the kick members permission.";
+    }
+    if (!operator.permissions.has("KickMembers")) {
+      return "You don't have the kick members permission.";
+    }
+    await member.kick("This user was a scammer.");
+    return `I have kicked <@${member.id}>.`;
+  }
+
+  async banMember(member: GuildMember, operator: GuildMember) {
+    if (!this.message.guild?.members.me?.permissions.has("BanMembers")) {
+      return "I don't have the ban members permission.";
+    }
+    if (!operator.permissions.has("BanMembers")) {
+      return "You don't have the ban members permission.";
+    }
+    await member.ban({ reason: "This user was a scammer." });
+    return `I have banned <@${member.id}>.`;
   }
 
   public async handleAntiScam() {
@@ -52,7 +106,7 @@ export default class AntiScam {
       if (textMatch || imageMatch) {
         if (message.member.moderatable) {
           try {
-            await message.member.timeout(24 * 60 * 60 * 1000, "Anti-Scam");
+            await message.member.timeout(60 * 1000, "Anti-Scam");
 
             channels?.forEach(async (channel) => {
               const logChannel = await message.guild?.channels.fetch(channel);
@@ -60,9 +114,23 @@ export default class AntiScam {
                 const logEmbed = new EmbedBuilder()
                   .setTitle("🚨 Scam Attempt Detected")
                   .setColor("Red")
-                  .setDescription(
-                    `**User:** <@${userId}> (${userId})\n**Content:** ${message.content || "No text"}\n**Channels:** <#${previous.channelId}> and <#${message.channel.id}>`,
-                  )
+                  .setFields([
+                    {
+                      name: "User",
+                      value: `<@${userId}> (${userId})`,
+                      inline: true,
+                    },
+                    {
+                      name: "Content",
+                      value: message.content || "No text",
+                      inline: true,
+                    },
+                    {
+                      name: "Channels",
+                      value: `<#${previous.channelId}> and <#${message.channel.id}>`,
+                      inline: false,
+                    },
+                  ])
                   .setTimestamp();
 
                 const files = [];
@@ -78,8 +146,31 @@ export default class AntiScam {
                       `\n**Attachment:** ${attachmentName}`,
                   );
                 }
+                const buttons = ["🥾|Kick", "🔨|Ban", "🔓|Overturn"].map(
+                  (button) => {
+                    const [emoji, name] = button.split("|");
+                    return new ButtonBuilder({
+                      style:
+                        name === "Kick"
+                          ? ButtonStyle.Primary
+                          : name === "Ban"
+                            ? ButtonStyle.Danger
+                            : ButtonStyle.Success,
+                      emoji,
+                      label: name,
+                      custom_id: `antiscam/${name.toLowerCase()}`,
+                    });
+                  },
+                );
+                const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+                  ...buttons,
+                );
 
-                await logChannel.send({ embeds: [logEmbed], files: files });
+                await logChannel.send({
+                  embeds: [logEmbed],
+                  components: [row],
+                  files: files,
+                });
               }
             });
             await message.delete();

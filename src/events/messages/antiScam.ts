@@ -1,8 +1,6 @@
-import { checkIfSystemEnabled } from "#utils";
+import { checkIfSystemEnabled, userCache } from "#utils";
 import { eventModule, EventType, Services } from "@sern/handler";
 import { Events } from "discord.js";
-
-const userCache = new Map<string, CachedMessage>();
 
 export default eventModule({
   type: EventType.Discord,
