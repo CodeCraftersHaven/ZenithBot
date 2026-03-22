@@ -7,6 +7,7 @@ import router from "./routes/index.js";
 export const startApi = async (client: Client) => {
   const fastify: FastifyInstance = Fastify({
     logger: true, // Fastify has built-in high-performance logging (Pino)
+    ignoreTrailingSlash: true,
   });
 
   await fastify.register(cookie, {
