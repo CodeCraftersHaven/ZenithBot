@@ -21,7 +21,9 @@ export default commandModule({
     await ctx.deferReply({ flags: MessageFlags.Ephemeral });
     const [tickets, prisma] = [deps["systems"].Tickets, deps["@prisma/client"]];
     const user = ctx.user as User;
-    const guild = await deps["@sern/client"].guilds.fetch((ctx.guild as Guild).id);
+    const guild = await deps["@sern/client"].guilds.fetch(
+      (ctx.guild as Guild).id,
+    );
 
     const act = params! as
       | "open"
@@ -107,14 +109,14 @@ export default commandModule({
         });
 
         await Ticket.openTicket();
-        let arr: string[] = [];
+        const arr: string[] = [];
         ctx.guild?.members.cache.map((m) => {
           m.roles.cache.has(staffId) && arr.push(m.id);
-        })
+        });
         if (arr.length > 0) {
           arr.forEach(async (id) => {
             await newThread.members.add(id);
-          })
+          });
         }
         await newThread.send({
           content: `<@&${staffId}>, Please claim the ticket by clicking the button below. This will remove everyone else from the ticket.`,
@@ -142,24 +144,31 @@ export default commandModule({
             content: "You do not have permission to close this ticket.",
           });
         }
-        const Ticket = new tickets(true, (ctx.guild as Guild).id, thread.id, id);
+        const Ticket = new tickets(
+          true,
+          (ctx.guild as Guild).id,
+          thread.id,
+          id,
+        );
         await thread.setLocked(true, "user has resolved their issue.");
 
         ctx.channel?.messages.fetch().then((msgs) => {
-          msgs.filter((m) => !m.system && m.author.id === ctx.client.user.id)
-            .every(async (m) => await m.edit({ components: [] }))
-        })
+          msgs
+            .filter((m) => !m.system && m.author.id === ctx.client.user.id)
+            .every(async (m) => await m.edit({ components: [] }));
+        });
         await thread.send({
           embeds: [{ description: "This ticket has been closed." }],
         });
 
         await Ticket.closeTicket();
-        (ctx.channel as PrivateThreadChannel).members.fetch({ withMember: true })
+        (ctx.channel as PrivateThreadChannel).members
+          .fetch({ withMember: true })
           .then((member) => {
             member.map(async (m) => {
-              await m.remove()
-            })
-          })
+              await m.remove();
+            });
+          });
         return await ctx.deleteReply();
       },
       check: async () => {
@@ -344,8 +353,17 @@ export default commandModule({
           (role) => role.managed && role.name === ctx.client.user.username,
         );
         const vcParent = thread.parent?.parent;
-        if (!vcParent?.permissionsFor(ctx.guild?.members.me!)?.has([PermissionsBitField.Flags.Connect, PermissionsBitField.Flags.Speak])) {
-          return ctx.editReply(`Please update my permissions to include Connect and Speak to use this feature.`)
+        if (
+          !vcParent
+            ?.permissionsFor(ctx.guild?.members.me!)
+            ?.has([
+              PermissionsBitField.Flags.Connect,
+              PermissionsBitField.Flags.Speak,
+            ])
+        ) {
+          return ctx.editReply(
+            `Please update my permissions to include Connect and Speak to use this feature.`,
+          );
         }
         const voiceChannel = await guild.channels.create({
           name: `ticket-voice-${id}`,
@@ -411,7 +429,7 @@ export default commandModule({
         });
         return ctx.deleteReply();
       },
-      default: () => { },
+      default: () => {},
     };
     type Act = keyof typeof acts;
     const result = ((await acts[act as Act]) || acts.default)();

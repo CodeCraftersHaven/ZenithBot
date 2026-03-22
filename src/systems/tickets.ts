@@ -36,7 +36,7 @@ export default class Tickets {
   }
   async closeTicket() {
     const userTicket = await this.db.userTicket.findFirst({
-      where: { id: this.userId }
+      where: { id: this.userId },
     });
 
     const guild = userTicket?.guilds.find((g) => g.id === this.guildId);

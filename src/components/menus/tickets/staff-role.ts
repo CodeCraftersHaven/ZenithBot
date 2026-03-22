@@ -25,15 +25,17 @@ export default commandModule({
             },
           },
         },
-      }
-    })
-    return ctx.editReply({
-      content: `Staff role for tickets in this channel has been set to <@&${roleId}>.`,
-    }).catch(() => {
-      return ctx.editReply({
-        content:
-          "Could not find the ticket system configuration for this channel.",
+      },
+    });
+    return ctx
+      .editReply({
+        content: `Staff role for tickets in this channel has been set to <@&${roleId}>.`,
+      })
+      .catch(() => {
+        return ctx.editReply({
+          content:
+            "Could not find the ticket system configuration for this channel.",
+        });
       });
-    })
-  }
+  },
 });
