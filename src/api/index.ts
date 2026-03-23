@@ -1,3 +1,4 @@
+import { prisma } from "#utils";
 import cookie from "@fastify/cookie";
 import cors from "@fastify/cors";
 import { Client } from "discord.js";
@@ -19,7 +20,7 @@ export const startApi = async (client: Client) => {
     origin: "https://zenith-bot.xyz",
     credentials: true,
   });
-
+  fastify.decorate("prisma", prisma);
   // Root level health check
   fastify.get("/health", async () => {
     return { status: "ok" };
@@ -30,6 +31,7 @@ export const startApi = async (client: Client) => {
 
   const start = async () => {
     try {
+      await fastify.ready();
       await fastify.listen({ port: 20000, host: "0.0.0.0" });
       console.log("Fastify API is running on port 20000");
     } catch (err) {
