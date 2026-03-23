@@ -1,16 +1,7 @@
 import axios from "axios";
 import { Client } from "discord.js";
 import { FastifyInstance } from "fastify";
-
-export interface PartialGuild {
-  id: string;
-  name: string;
-  icon: string | null;
-  owner: boolean;
-  permissions: string;
-  features: string[];
-  bot_present?: boolean;
-}
+import { PartialGuild } from "../types.js";
 
 export default async function discordRoutes(
   fastify: FastifyInstance,
