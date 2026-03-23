@@ -53,6 +53,6 @@ export default eventModule({
       }
     }
 
-    await startApi(client)
+    await startApi(client);
   },
 });
