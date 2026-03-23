@@ -25,7 +25,6 @@ export default async function guildRoutes(
     options: { client: Client },
 ) {
     const { client } = options;
-    if (!client.isReady()) return;
     fastify.addHook("preHandler", async (request, reply) => {
         const accessToken = request.cookies.access_token;
         if (!accessToken) {

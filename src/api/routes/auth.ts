@@ -8,7 +8,6 @@ export default async function authRoutes(
   options: { client: Client },
 ) {
   const { client } = options;
-  if (!client.isReady()) return;
 
   fastify.get("/discord/login", async (request, reply) => {
     const clientId = process.env.APP_ID;
