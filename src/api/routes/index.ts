@@ -1,8 +1,9 @@
-import { FastifyInstance } from "fastify";
+import { prisma } from "#utils";
 import { Client } from "discord.js";
+import { FastifyInstance } from "fastify";
 import authRoutes from "./auth.js";
 import discordRoutes from "./discord.js";
-import { prisma } from "#utils";
+import guildRoutes from "./guilds.js";
 
 /**
  * Main router that aggregates all API routes.
@@ -19,6 +20,9 @@ export default async function router(
 
   // Discord data routes
   await fastify.register(discordRoutes, { prefix: "/discord", client });
+
+  // Guild settings routes
+  await fastify.register(guildRoutes, { prefix: "/guilds", client });
 
   // Health check endpoint
   fastify.get("/health", async () => {
@@ -47,3 +51,4 @@ export default async function router(
   // await fastify.register(userRoutes, { prefix: "/users", client });
   // await fastify.register(guildRoutes, { prefix: "/guilds", client });
 }
+

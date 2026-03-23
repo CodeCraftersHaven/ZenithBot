@@ -1,6 +1,16 @@
 import axios from "axios";
-import { Client, PermissionFlagsBits } from "discord.js";
+import { Client } from "discord.js";
 import { FastifyInstance } from "fastify";
+
+export interface PartialGuild {
+  id: string;
+  name: string;
+  icon: string | null;
+  owner: boolean;
+  permissions: string;
+  features: string[];
+  bot_present?: boolean;
+}
 
 export default async function discordRoutes(
   fastify: FastifyInstance,
@@ -21,21 +31,31 @@ export default async function discordRoutes(
     const accessToken = request.cookies.access_token;
 
     try {
-      const userGuildsResponse = await axios.get(
+      const response = await axios.get<PartialGuild[]>(
         "https://discord.com/api/users/@me/guilds",
         {
           headers: { Authorization: `Bearer ${accessToken}` },
         },
       );
 
-      const userGuilds = userGuildsResponse.data;
+      const userGuilds = response.data;
 
-      // Optionally, you can filter guilds where the user has MANAGE_GUILD or ADMINISTRATOR
-      // or mark which ones the bot is already in.
-      const managedGuilds = userGuilds.map((guild: any) => ({
-        ...guild,
-        bot_present: client.guilds.cache.has(guild.id),
-      }));
+      // Filter guilds where user has MANAGE_GUILD (0x20) or ADMINISTRATOR (0x8)
+      const managedGuilds = userGuilds
+        .filter((guild) => {
+          const permissions = BigInt(guild.permissions);
+          const MANAGE_GUILD = BigInt(0x20);
+          const ADMINISTRATOR = BigInt(0x8);
+          return (
+            (permissions & MANAGE_GUILD) === MANAGE_GUILD ||
+            (permissions & ADMINISTRATOR) === ADMINISTRATOR ||
+            guild.owner
+          );
+        })
+        .map((guild) => ({
+          ...guild,
+          bot_present: client.guilds.cache.has(guild.id),
+        }));
 
       return reply.send(managedGuilds);
     } catch (error) {
@@ -44,13 +64,22 @@ export default async function discordRoutes(
     }
   });
 
+  fastify.get("/guilds/:guildId", async (request, reply) => {
+    const { guildId } = request.params as { guildId: string };
+    const guild = client.guilds.cache.get(guildId);
+    if (!guild) return reply.status(404).send({ error: "Guild not found" });
+    return reply.send({ id: guild.id, name: guild.name, icon: guild.icon });
+  });
+
   // GET /api/v1/discord/guilds/:guildId/channels
   fastify.get("/guilds/:guildId/channels", async (request, reply) => {
     const { guildId } = request.params as { guildId: string };
     const guild = client.guilds.cache.get(guildId);
 
     if (!guild) {
-      return reply.status(404).send({ error: "Guild not found or bot not in guild" });
+      return reply
+        .status(404)
+        .send({ error: "Guild not found or bot not in guild" });
     }
 
     const channels = guild.channels.cache.map((channel) => ({
@@ -69,7 +98,9 @@ export default async function discordRoutes(
     const guild = client.guilds.cache.get(guildId);
 
     if (!guild) {
-      return reply.status(404).send({ error: "Guild not found or bot not in guild" });
+      return reply
+        .status(404)
+        .send({ error: "Guild not found or bot not in guild" });
     }
 
     const roles = guild.roles.cache.map((role) => ({
