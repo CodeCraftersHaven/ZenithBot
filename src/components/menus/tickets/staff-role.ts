@@ -4,9 +4,8 @@ import { MessageFlags, TextChannel } from "discord.js";
 
 export default commandModule({
   type: CommandType.RoleSelect,
-  async execute(ctx, { deps }) {
+  async execute(ctx) {
     await ctx.deferReply({ flags: MessageFlags.Ephemeral });
-    const db = deps["@prisma/client"];
     const chan = ctx.channel as TextChannel;
     const roleId = ctx.values[0];
     await prisma.systems.update({

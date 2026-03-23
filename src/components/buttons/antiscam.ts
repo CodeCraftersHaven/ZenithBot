@@ -1,15 +1,13 @@
-import { commandModule, CommandType } from "@sern/handler";
 import { userCache } from "#utils";
+import { commandModule, CommandType } from "@sern/handler";
 import { GuildMember } from "discord.js";
 
 export default commandModule({
   type: CommandType.Button,
   async execute(ctx, { deps, params }) {
     await ctx.deferReply();
-    const [AntiScam, prisma] = [
-      deps["systems"].AntiScam,
-      deps["@prisma/client"],
-    ];
+    const AntiScam = deps["systems"].AntiScam;
+
     const operator = ctx.member as GuildMember;
     const userId = ctx.message.embeds[0].fields
       .find((f) => f.name === "User")

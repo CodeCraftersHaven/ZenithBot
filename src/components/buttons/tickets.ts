@@ -110,8 +110,10 @@ export default commandModule({
 
         await Ticket.openTicket();
         const arr: string[] = [];
-        ctx.guild?.members.cache.map((m) => {
-          m.roles.cache.has(staffId) && arr.push(m.id);
+        ctx.guild?.members.cache.forEach((m) => {
+          if (m.roles.cache.has(staffId)) {
+            arr.push(m.id);
+          }
         });
         if (arr.length > 0) {
           arr.forEach(async (id) => {
@@ -295,8 +297,7 @@ export default commandModule({
           });
         }
 
-        // eslint-disable-next-line unused-imports/no-unused-vars
-        for (const [memberId, member] of staffMembersInThread) {
+        for (const [memberId, _] of staffMembersInThread) {
           if (memberId !== ctx.user.id && memberId !== id) {
             await thread.members.remove(memberId);
           }
@@ -347,6 +348,7 @@ export default commandModule({
         return ctx.deleteReply();
       },
       "accept-voice": async () => {
+        if (!ctx.guild) return;
         if (id === ctx.user.id)
           return ctx.editReply("You cannot accept your own request.");
         const managedRole = guild.roles.cache.find(
@@ -355,7 +357,7 @@ export default commandModule({
         const vcParent = thread.parent?.parent;
         if (
           !vcParent
-            ?.permissionsFor(ctx.guild?.members.me!)
+            ?.permissionsFor(ctx.guild.members.me!)
             ?.has([
               PermissionsBitField.Flags.Connect,
               PermissionsBitField.Flags.Speak,
