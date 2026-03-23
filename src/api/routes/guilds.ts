@@ -1,3 +1,4 @@
+import { GuildConfig } from "@prisma/client";
 import { Services } from "@sern/handler";
 import axios from "axios";
 import { ChannelType, Client, PermissionFlagsBits } from "discord.js";
@@ -72,8 +73,10 @@ export default async function guildRoutes(
         ) || {};
 
       return reply.send({
-        prefix: "!",
         welcomeStyle: config?.welcomeStyle || "default",
+        embed: config?.embed ?? false,
+        customImageUrl: config?.customImageUrl || null,
+        displayMemberCount: config?.displayMemberCount ?? true,
         systems: systemMap,
         autoroleId: autorole?.roleId || "",
       });
@@ -99,13 +102,19 @@ export default async function guildRoutes(
     try {
       const updates: Promise<SettingsUpdate>[] = [];
 
-      // 2. Update GuildConfig (Welcome Style)
-      if (body.welcomeStyle !== undefined) {
+      // 2. Update GuildConfig (Welcome Style, Embed, Image, Member Count)
+      const configFields: Partial<Omit<GuildConfig, "id" | "updatedAt">> = {};
+      if (body.welcomeStyle !== undefined) configFields.welcomeStyle = body.welcomeStyle;
+      if (body.embed !== undefined) configFields.embed = body.embed;
+      if (body.customImageUrl !== undefined) configFields.customImageUrl = body.customImageUrl;
+      if (body.displayMemberCount !== undefined) configFields.displayMemberCount = body.displayMemberCount;
+
+      if (Object.keys(configFields).length > 0) {
         updates.push(
           prisma.guildConfig.upsert({
             where: { id: guildId },
-            update: { welcomeStyle: body.welcomeStyle },
-            create: { id: guildId, welcomeStyle: body.welcomeStyle },
+            update: configFields,
+            create: { id: guildId, ...configFields },
           }),
         );
       }

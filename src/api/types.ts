@@ -30,6 +30,9 @@ export interface System {
 
 export interface SettingsBody {
   welcomeStyle?: string;
+  embed?: boolean;
+  customImageUrl?: string | null;
+  displayMemberCount?: boolean;
   systems?: Record<string, System>;
   autoroleId?: string;
 }
