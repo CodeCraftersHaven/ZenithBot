@@ -120,4 +120,4 @@ export default class Welcome {
   }
 }
 
-export type WelcomeType = typeof Welcome;
+export type welcome = typeof Welcome;
