@@ -112,12 +112,37 @@ export default async function guildRoutes(
 
       // 3. Update Systems
       if (body.systems !== undefined) {
-        const systemsArray = Object.values(body.systems);
+        // Fetch existing systems to preserve channels and avoid overwriting with incomplete data
+        const existingSystems = await prisma.systems.findUnique({
+          where: { id: guildId },
+        });
+
+        const updatedSystems = existingSystems ? [...existingSystems.systems] : [];
+
+        for (const [key, systemData] of Object.entries(body.systems)) {
+          const systemName = (systemData.name || key).toLowerCase();
+          const idx = updatedSystems.findIndex(
+            (s) => s.name.toLowerCase() === systemName,
+          );
+
+          if (idx !== -1) {
+            updatedSystems[idx].enabled = systemData.enabled;
+          } else {
+            updatedSystems.push({
+              name: systemName,
+              enabled: systemData.enabled,
+              channels: [],
+            });
+          }
+        }
+
+        const guildName = client.guilds.cache.get(guildId)?.name || guildId;
+
         updates.push(
           prisma.systems.upsert({
             where: { id: guildId },
-            update: { systems: systemsArray },
-            create: { id: guildId, name: guildId, systems: systemsArray },
+            update: { systems: updatedSystems },
+            create: { id: guildId, name: guildName, systems: updatedSystems },
           }),
         );
       }
