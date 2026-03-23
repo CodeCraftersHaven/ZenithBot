@@ -14,7 +14,6 @@ import { Publisher } from "@sern/publisher";
 import { Client, GatewayIntentBits } from "discord.js";
 import "dotenv/config.js";
 import * as config from "./config.js";
-import { startApi } from "./api/index.js";
 
 const client = new Client({
   intents: [
@@ -59,5 +58,3 @@ await makeDependencies(({ add, swap }) => {
 Sern.init(config);
 
 await client.login();
-
-await startApi(client);
