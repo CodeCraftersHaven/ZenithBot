@@ -1,4 +1,3 @@
-import { prisma } from "#utils";
 import { Client } from "discord.js";
 import { FastifyInstance } from "fastify";
 import authRoutes from "./auth.js";
@@ -29,7 +28,7 @@ export default async function router(
     let databaseStatus = "unknown";
     try {
       // Use a model check that works with both SQL and MongoDB
-      await prisma.systems.findFirst();
+      await fastify.prisma.systems.findFirst();
       databaseStatus = "ok";
     } catch (error) {
       fastify.log.error(error);
@@ -51,4 +50,3 @@ export default async function router(
   // await fastify.register(userRoutes, { prefix: "/users", client });
   // await fastify.register(guildRoutes, { prefix: "/guilds", client });
 }
-
