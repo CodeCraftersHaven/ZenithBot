@@ -1,8 +1,10 @@
 import { Autorole, GuildConfig, PrismaClient, Systems } from "@prisma/client";
+import type { Logger } from "winston";
 
 declare module "fastify" {
   interface FastifyInstance {
     prisma: PrismaClient;
+    logger: Logger;
   }
 }
 
