@@ -9,8 +9,8 @@ export default async function authRoutes(
 ) {
   const { client } = options;
 
-  fastify.get("/discord/login", async (request, reply) => {
-    const clientId = process.env.APP_ID;
+  fastify.get("/discord/login", async (_, reply) => {
+    const clientId = client.application?.id;
     const redirectUri = encodeURIComponent(process.env.DISCORD_REDIRECT_URI!);
     const scope = encodeURIComponent("identify guilds");
 
@@ -49,14 +49,14 @@ export default async function authRoutes(
       const tokenResponse = await axios.post(
         "https://discord.com/api/oauth2/token",
         new URLSearchParams({
-          client_id: process.env.APP_ID!,
+          client_id: client.application!.id,
           grant_type: "authorization_code",
           code,
           redirect_uri: process.env.DISCORD_REDIRECT_URI!,
         }).toString(),
         {
           headers: {
-            Authorization: `Basic ${Buffer.from(`${process.env.APP_ID}:${process.env.SECRET}`).toString("base64")}`,
+            Authorization: `Basic ${Buffer.from(`${client.application!.id}:${process.env.SECRET}`).toString("base64")}`,
             "Content-Type": "application/x-www-form-urlencoded",
           },
         },
@@ -114,7 +114,7 @@ export default async function authRoutes(
 
   fastify.get("/invite", async (request, reply) => {
     const { guild_id } = request.query as { guild_id: string };
-    const clientId = process.env.APP_ID;
+    const clientId = client.application!.id;
     const redirectUri = encodeURIComponent(process.env.DISCORD_REDIRECT_URI!);
     const inviteUrl = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&scope=bot&permissions=397556182230&guild_id=${guild_id}&disable_guild_select=true&redirect_uri=${redirectUri}&response_type=code`;
     return reply.redirect(inviteUrl);
