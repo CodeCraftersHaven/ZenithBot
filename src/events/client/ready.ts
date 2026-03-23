@@ -1,7 +1,7 @@
 import { syncDatabase } from "#utils";
 import { eventModule, EventType, Services } from "@sern/handler";
 import { Events, TextChannel } from "discord.js";
-import { startApi } from "src/api";
+import { startApi } from "../../api/index.js";
 
 export default eventModule({
   type: EventType.Discord,
